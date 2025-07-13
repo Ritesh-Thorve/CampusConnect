@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -17,8 +16,7 @@ const College = () => {
       setStudents([profile]);
     }
 
-    // In a real app, you would fetch all student profiles from a database
-    // For now, we'll show some mock data along with the user's profile
+    // Mock data
     const mockStudents: StudentProfile[] = [
       {
         name: "Alice Johnson",
@@ -27,6 +25,9 @@ const College = () => {
         profileImage: "",
         collegeImage: "",
         linkedinUrl: "https://linkedin.com/in/alicejohnson",
+        twitterUrl: "https://twitter.com/alicejohnson",
+        githubUrl: "https://github.com/alicejohnson",
+        collegeIdCard: "",
         bio: "Computer Science student passionate about AI and machine learning. Love working on open source projects and contributing to the tech community.",
         major: "Computer Science",
         graduationYear: "2024"
@@ -38,6 +39,9 @@ const College = () => {
         profileImage: "",
         collegeImage: "",
         linkedinUrl: "https://linkedin.com/in/bobsmith",
+        twitterUrl: "https://twitter.com/bobsmith",
+        githubUrl: "https://github.com/bobsmith",
+        collegeIdCard: "",
         bio: "Engineering student with interest in robotics and automation. Part-time researcher at the robotics lab working on autonomous systems.",
         major: "Mechanical Engineering",
         graduationYear: "2025"
@@ -49,6 +53,9 @@ const College = () => {
         profileImage: "",
         collegeImage: "",
         linkedinUrl: "https://linkedin.com/in/caroldavis",
+        twitterUrl: "https://twitter.com/caroldavis",
+        githubUrl: "https://github.com/caroldavis",
+        collegeIdCard: "",
         bio: "Business major with focus on entrepreneurship. Currently working on my startup idea in fintech and sustainable technology solutions.",
         major: "Business Administration",
         graduationYear: "2024"
@@ -64,32 +71,44 @@ const College = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
-      <Navbar />
-      
-      <div className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+      {/* Desktop Navbar */}
+      <div className="hidden md:block">
+        <Navbar />
+      </div>
+
+      {/* Main content with safe area padding */}
+      <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
+          <div className="text-center mb-10 md:mb-16">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6">
               College <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Community</span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              Connect with fellow students from universities around the world. 
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Connect with fellow students from universities around the world.
               Share your academic journey and discover new opportunities.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
             {students.map((student, index) => (
-              <StudentCard key={index} student={student} />
+              <StudentCard key={`${student.name}-${index}`} student={student} />
             ))}
           </div>
 
           {students.length === 0 && <EmptyState />}
         </div>
-      </div>
+      </main>
       
-      <Footer />
-    </div>
+      {/* Footer - hidden on mobile */ }
+  <div className="hidden md:block">
+    <Footer />
+  </div>
+
+  {/* Mobile bottom navigation */ }
+  <div className="md:hidden fixed bottom-0 w-full z-50">
+    <Navbar />
+  </div>
+    </div >
   );
 };
 
