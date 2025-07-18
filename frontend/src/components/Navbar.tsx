@@ -21,17 +21,22 @@ const Navbar = () => {
           <div className="px-6">
             <div className="flex justify-between items-center h-16">
               {/* Logo with Gradient */}
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="flex items-center space-x-2 group ml-1 hover:opacity-90 transition-opacity"
               >
-                <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
-                  <Home className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full overflow-hidden group-hover:rotate-12 transition-transform duration-300">
+                  <img
+                    src="/compus-connect_logo.png"
+                    alt="Campus Connect Logo"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <span className="font-bold text-xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   CampusConnect
                 </span>
               </Link>
+
 
               {/* Navigation Links - Rounded Items */}
               <div className="flex items-center space-x-1">
@@ -42,11 +47,10 @@ const Navbar = () => {
                     <Link
                       key={item.name}
                       to={item.path}
-                      className={`flex items-center space-x-2 px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                        isActive
-                          ? 'text-indigo-600 bg-indigo-50/60'
-                          : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/30'
-                      }`}
+                      className={`flex items-center space-x-2 px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${isActive
+                        ? 'text-indigo-600 bg-indigo-50/60'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/30'
+                        }`}
                     >
                       <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.3px]' : ''}`} />
                       <span>{item.name}</span>
@@ -58,8 +62,8 @@ const Navbar = () => {
               {/* Auth Buttons - Rounded */}
               <div className="flex items-center space-x-3 mr-1">
                 <Link to="/login">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     className="rounded-full text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/40 px-5 flex items-center gap-1.5 border border-gray-200"
                   >
@@ -68,8 +72,8 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 <Link to="/signup">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="rounded-full px-5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-sm hover:shadow-md transition-all"
                   >
                     Sign Up
@@ -91,9 +95,8 @@ const Navbar = () => {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex flex-col items-center p-1 w-full transition-colors duration-200 ${
-                  isActive ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`flex flex-col items-center p-1 w-full transition-colors duration-200 ${isActive ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 <div className={`p-2 rounded-full ${isActive ? 'bg-indigo-50' : ''}`}>
                   <Icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5px]' : ''}`} />

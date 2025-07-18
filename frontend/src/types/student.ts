@@ -1,5 +1,6 @@
 
 export interface StudentProfile {
+  email: any;
   name: string;
   collegeName: string;
   collegeAddress: string;

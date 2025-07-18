@@ -20,6 +20,7 @@ const College = () => {
     const mockStudents: StudentProfile[] = [
       {
         name: "Alice Johnson",
+        email: "alice.johnson@mit.edu",
         collegeName: "MIT",
         collegeAddress: "Cambridge, MA, United States",
         profileImage: "",
@@ -34,6 +35,7 @@ const College = () => {
       },
       {
         name: "Bob Smith",
+        email: "bob.smith@stanford.edu",
         collegeName: "Stanford University",
         collegeAddress: "Stanford, CA, United States",
         profileImage: "",
@@ -48,6 +50,7 @@ const College = () => {
       },
       {
         name: "Carol Davis",
+        email: "carol.davis@harvard.edu",
         collegeName: "Harvard University",
         collegeAddress: "Cambridge, MA, United States",
         profileImage: "",
