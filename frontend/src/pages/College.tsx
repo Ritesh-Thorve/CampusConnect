@@ -9,14 +9,12 @@ const College = () => {
   const [students, setStudents] = useState<StudentProfile[]>([]);
 
   useEffect(() => {
-    // Load current user profile from localStorage
     const userProfile = localStorage.getItem('userProfile');
     if (userProfile) {
       const profile = JSON.parse(userProfile);
       setStudents([profile]);
     }
 
-    // Mock data
     const mockStudents: StudentProfile[] = [
       {
         name: "Alice Johnson",
@@ -79,7 +77,19 @@ const College = () => {
         <Navbar />
       </div>
 
-      {/* Main content with safe area padding */}
+      {/* Mobile Header */}
+      <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 py-3 px-4">
+        <div className="flex items-center justify-center">
+          <img
+            src="/compus-connect_logo.png"
+            alt="Campus Connect"
+            className="h-6 w-6 mr-2 object-cover"
+          />
+          <span className="text-sm font-semibold text-gray-800">Campus Connect</span>
+        </div>
+      </div>
+
+      {/* Main content */}
       <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
           <div className="text-center mb-10 md:mb-16">
@@ -101,17 +111,17 @@ const College = () => {
           {students.length === 0 && <EmptyState />}
         </div>
       </main>
-      
-      {/* Footer - hidden on mobile */ }
-  <div className="hidden md:block">
-    <Footer />
-  </div>
 
-  {/* Mobile bottom navigation */ }
-  <div className="md:hidden fixed bottom-0 w-full z-50">
-    <Navbar />
-  </div>
-    </div >
+      {/* Footer - hidden on mobile */}
+      <div className="hidden md:block">
+        <Footer />
+      </div>
+
+      {/* Mobile bottom navigation */}
+      <div className="md:hidden fixed bottom-0 w-full z-50">
+        <Navbar />
+      </div>
+    </div>
   );
 };
 

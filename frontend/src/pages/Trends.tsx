@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
-import { PlusCircle, Search, Calendar, User, Eye, Heart, MessageCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  PlusCircle, Search, Calendar, Eye, Heart, MessageCircle
+} from 'lucide-react';
+import {
+  Card, CardContent, CardHeader, CardTitle
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Avatar, AvatarFallback, AvatarImage
+} from '@/components/ui/avatar';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -39,7 +47,7 @@ const Trends = () => {
         {
           id: '1',
           title: 'Tips for Acing Your Final Exams',
-          content: 'As finals approach, here are some proven strategies that helped me maintain my GPA...',
+          content: 'As finals approach, here are some proven strategies...',
           author: 'Sarah Johnson',
           date: '2024-01-15',
           views: 234,
@@ -50,7 +58,7 @@ const Trends = () => {
         {
           id: '2',
           title: 'My Internship Experience at Tech Giant',
-          content: 'Last summer, I had the incredible opportunity to intern at a major tech company...',
+          content: 'Last summer, I had the opportunity to intern at a tech company...',
           author: 'Mike Chen',
           date: '2024-01-12',
           views: 189,
@@ -82,7 +90,6 @@ const Trends = () => {
     const updatedBlogs = [blog, ...blogs];
     setBlogs(updatedBlogs);
     localStorage.setItem('campusBlogs', JSON.stringify(updatedBlogs));
-
     setNewBlog({ title: '', content: '', tags: '' });
   };
 
@@ -93,11 +100,29 @@ const Trends = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      {/* Desktop Navbar */}
+      <div className="hidden md:block">
+        <Navbar />
+      </div>
+      
+      {/* Mobile Header (shown only on mobile) */}
+      <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 py-3 px-4">
+        <div className="flex items-center justify-center">
+          {/* Logo */}
+          <img 
+            src="/compus-connect_logo.png" // Update with your logo path
+            alt="Campus Connect"
+            className="h-6 w-6 mr-2"
+          />
+          {/* Name */}
+          <span className="text-sm font-semibold text-gray-800">Campus Connect</span>
+        </div>
+      </div>
 
-      <main className="flex-1 px-4 py-6 sm:px-6">
-        {/* Header section */}
+      {/* Main content */}
+      <main className="flex-1 px-4 py-6 pb-28 md:pb-10 overflow-y-auto">
+        {/* Page Title */}
         <header className="text-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:text-3xl">
             Trending <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Topics</span>
@@ -107,7 +132,7 @@ const Trends = () => {
           </p>
         </header>
 
-        {/* Search and create controls */}
+        {/* Search & Create */}
         <section className="mb-6">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
@@ -135,32 +160,21 @@ const Trends = () => {
                     placeholder="Blog title..."
                     value={newBlog.title}
                     onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })}
-                    className="text-sm sm:text-base"
                   />
                   <Textarea
                     placeholder="Share your thoughts..."
                     value={newBlog.content}
                     onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
-                    className="min-h-[120px] text-sm sm:text-base"
+                    className="min-h-[120px]"
                   />
                   <Input
                     placeholder="Tags (comma separated)"
                     value={newBlog.tags}
                     onChange={(e) => setNewBlog({ ...newBlog, tags: e.target.value })}
-                    className="text-sm"
                   />
                   <div className="flex justify-end gap-2">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setNewBlog({ title: '', content: '', tags: '' })}
-                      className="text-sm px-3 py-1"
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      onClick={handleSubmitBlog}
-                      className="bg-gradient-to-r from-indigo-600 to-purple-600 text-sm px-3 py-1"
-                    >
+                    <Button variant="outline" onClick={() => setNewBlog({ title: '', content: '', tags: '' })}>Cancel</Button>
+                    <Button onClick={handleSubmitBlog} className="bg-gradient-to-r from-indigo-600 to-purple-600">
                       Publish
                     </Button>
                   </div>
@@ -170,7 +184,7 @@ const Trends = () => {
           </div>
         </section>
 
-        {/* Blog posts */}
+        {/* Blogs */}
         <section className="space-y-4">
           {filteredBlogs.length > 0 ? (
             filteredBlogs.map((blog) => (
@@ -192,18 +206,9 @@ const Trends = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-gray-500">
-                      <span className="flex items-center">
-                        <Eye className="w-3 h-3 mr-1" />
-                        {blog.views}
-                      </span>
-                      <span className="flex items-center">
-                        <Heart className="w-3 h-3 mr-1" />
-                        {blog.likes}
-                      </span>
-                      <span className="flex items-center">
-                        <MessageCircle className="w-3 h-3 mr-1" />
-                        {blog.comments}
-                      </span>
+                      <span className="flex items-center"><Eye className="w-3 h-3 mr-1" />{blog.views}</span>
+                      <span className="flex items-center"><Heart className="w-3 h-3 mr-1" />{blog.likes}</span>
+                      <span className="flex items-center"><MessageCircle className="w-3 h-3 mr-1" />{blog.comments}</span>
                     </div>
                   </div>
                 </CardHeader>
@@ -216,12 +221,7 @@ const Trends = () => {
                   </p>
                   <div className="flex flex-wrap gap-1">
                     {blog.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs"
-                      >
-                        #{tag}
-                      </span>
+                      <span key={tag} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs">#{tag}</span>
                     ))}
                   </div>
                 </CardContent>
@@ -243,9 +243,17 @@ const Trends = () => {
         </section>
       </main>
 
-      <Footer />
+      {/* Footer (desktop only) */}
+      <div className="hidden md:block">
+        <Footer />
+      </div>
+
+      {/* Bottom Navbar (mobile only) */}
+      <div className="md:hidden fixed bottom-0 w-full z-20">
+        <Navbar />
+      </div>
     </div>
   );
-};  
+};
 
 export default Trends;
