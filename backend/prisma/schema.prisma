@@ -1,15 +1,61 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  googleId  String?  @unique
+  profiles  Profile?
+  createdAt DateTime @default(now())
+}
+
+model Profile {
+  id              String @id @default(uuid())
+  userId          String @unique
+  user            User   @relation(fields: [userId], references: [id])
+  fullName        String
+  profileImg      String?
+  collegeName     String
+  collegeAddress  String
+  fieldOfStudy    String
+  graduationYear  Int
+  collegeImage    String?
+  collegeIdCard   String?
+  bio             String?
+  linkedIn        String?
+  twitter         String?
+  github          String?
+}
+
+model Update {
+  id        String   @id @default(uuid())
+  title     String
+  type      String
+  details   String
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+model Trend {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  tag         String
+  createdAt   DateTime @default(now())
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  userId        String
+  amount        Int
+  razorpayId    String
+  status        String
+  createdAt     DateTime @default(now())
 }
