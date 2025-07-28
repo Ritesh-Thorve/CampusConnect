@@ -4,7 +4,7 @@ import updatesRoutes from './routes/updatesRoutes.js';
 import trendsRoutes from './routes/trendsRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
-
+import { rateLimiterMiddleware } from './middlewares/rateLimitMiddleware.js';
 
 import express from 'express';
 import cors from 'cors';
@@ -21,6 +21,7 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(rateLimiterMiddleware);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
