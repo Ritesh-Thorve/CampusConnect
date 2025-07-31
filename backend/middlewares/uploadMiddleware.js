@@ -1,10 +1,19 @@
-import multer from 'multer';
+import multer from "multer";
 
-const storage = multer.memoryStorage(); // Store files in memory before uploading to Supabase
-const upload = multer({ storage });
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("Only image files are allowed"), false);
+    }
+    cb(null, true);
+  }
+});
 
-export const uploadFiles = upload.fields([
-  { name: 'profileImg', maxCount: 1 },
-  { name: 'collegeImage', maxCount: 1 },
-  { name: 'collegeIdCard', maxCount: 1 }
+export const profileUpload = upload.fields([
+  { name: "profileImg", maxCount: 1 },
+  { name: "collegeImage", maxCount: 1 },
+  { name: "collegeIdCard", maxCount: 1 }
 ]);

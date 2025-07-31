@@ -1,25 +1,43 @@
-import { razorpay } from '../utils/razorpay.js';
-import prisma from '../config/db.js';
+import { razorpay } from "../utils/razorpay.js";
+import prisma from "../config/db.js";
 
-export const createOrder = async (req, res, next) => {
+/**
+ * @desc Create a Razorpay order with a fixed amount of ₹100
+ * @route POST /payment/order
+ * @access Private (JWT Required)
+ */
+export const createOrder = async (req, res) => {
   try {
-    const { amount } = req.body;
     const userId = req.user.userId;
+    const FIXED_AMOUNT = 100; // ₹100
 
+    // Razorpay expects amount in paise
     const options = {
-      amount: amount * 100, // in paise
-      currency: 'INR',
+      amount: FIXED_AMOUNT * 100, // 100 * 100 = 10,000 paise
+      currency: "INR",
       receipt: `receipt_${Date.now()}`
     };
 
+    // Create order in Razorpay
     const order = await razorpay.orders.create(options);
 
+    // Save order details in DB
     await prisma.payment.create({
-      data: { userId, amount, razorpayId: order.id, status: 'created' }
+      data: {
+        userId,
+        amount: FIXED_AMOUNT,
+        razorpayId: order.id,
+        status: "created"
+      }
     });
 
-    res.json({ order });
+    return res.json({
+      message: "Order created successfully",
+      amount: FIXED_AMOUNT,
+      order
+    });
   } catch (err) {
-    next(err);
+    console.error("Error creating order:", err.message);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
