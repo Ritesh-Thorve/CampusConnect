@@ -3,8 +3,7 @@ import { uploadFile } from "../utils/upload.js";
 import Joi from "joi";
 import { validate } from "../utils/validator.js";
 
-// Profile Validation Schema using Joi
-
+// Joi Schema for Profile Validation
 const profileSchema = Joi.object({
   fullName: Joi.string().required(),
   collegeName: Joi.string().required(),
@@ -17,68 +16,58 @@ const profileSchema = Joi.object({
   github: Joi.string().uri().optional()
 });
 
-/**
- * @desc Create or update user profile
- * @route POST /profile
- * @access Private (JWT Required)
- */
-
+// Create or Update Profile
 export const createOrUpdateProfile = async (req, res) => {
   try {
-    // Validate incoming request body
+    // Validate request body
     validate(profileSchema, req.body);
 
     const userId = req.user.userId;
     const uploadedFiles = {};
 
-    //  Upload images if provided
+    // Handle file uploads in parallel
+    const fileUploads= [];
+
     if (req.files?.profileImg) {
-      uploadedFiles.profileImg = await uploadFile(
-        "profile-images",
-        req.files.profileImg[0]
+      uploadTasks.push(
+        uploadFile("profile-images", req.files.profileImg[0])
+          .then(url => uploadedFiles.profileImg = url)
       );
     }
+
     if (req.files?.collegeImage) {
-      uploadedFiles.collegeImage = await uploadFile(
-        "college-images",
-        req.files.collegeImage[0]
+      uploadTasks.push(
+        uploadFile("college-images", req.files.collegeImage[0])
+          .then(url => uploadedFiles.collegeImage = url)
       );
     }
+
     if (req.files?.collegeIdCard) {
-      uploadedFiles.collegeIdCard = await uploadFile(
-        "id-cards",
-        req.files.collegeIdCard[0]
+      uploadTasks.push(
+        uploadFile("id-cards", req.files.collegeIdCard[0])
+          .then(url => uploadedFiles.collegeIdCard = url)
       );
     }
 
-    //  Merge body data with uploaded file URLs
-    const profileData = {
-      ...req.body,
-      ...uploadedFiles
-    };
+    await Promise.all(uploadTasks);
 
-    //  Upsert profile: Update if exists, else create
+    const profileData = { ...req.body, ...uploadedFiles };
+
+    // Upsert profile (Create if not exists, else update)
     const profile = await prisma.profile.upsert({
       where: { userId },
       update: profileData,
       create: { userId, ...profileData }
     });
 
-    return res.json({
-      message: "Profile saved successfully",
-      profile
-    });
-  } catch (err) {
-    console.error("Error in createOrUpdateProfile:", err.message);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.json({ message: "Profile saved successfully", profile });
+  } catch (error) {
+    console.error("Error in createOrUpdateProfile:", error);
+    return res.status(500).json({ error: "Unable to save profile" });
   }
 };
 
-/**
- * @desc Get user profile
- * @route GET /profile
- * @access Private (JWT Required)
- */
+//Get Single User Profile
 export const getProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -86,7 +75,7 @@ export const getProfile = async (req, res) => {
     const profile = await prisma.profile.findUnique({
       where: { userId },
       include: {
-        user: { select: { fullname: true, email: true } } // Include basic user info
+        user: { select: { fullname: true, email: true } }
       }
     });
 
@@ -95,8 +84,43 @@ export const getProfile = async (req, res) => {
     }
 
     return res.json(profile);
-  } catch (err) {
-    console.error("Error in getProfile:", err.message);
+  } catch (error) {
+    console.error("Error in getProfile:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// All Profiles (With Filters & Pagination)
+export const getAllProfiles = async (req, res) => {
+  try {
+    const {
+      collegeName,
+      graduationYear,
+      page = 1,
+      limit = 10
+    } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    const profiles = await prisma.profile.findMany({
+      where: {
+        ...(collegeName && { collegeName }),
+        ...(graduationYear && { graduationYear: parseInt(graduationYear) })
+      },
+      include: {
+        user: { select: { fullname: true, email: true } }
+      },
+      orderBy: { createdAt: "desc" },
+      skip: parseInt(skip),
+      take: parseInt(limit)
+    });
+
+    return res.json({
+      count: profiles.length,
+      profiles
+    });
+  } catch (error) {
+    console.error("Error in getAllProfiles:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
