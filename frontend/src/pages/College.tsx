@@ -3,63 +3,67 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import StudentCard from '@/components/college/StudentCard';
 import EmptyState from '@/components/college/EmptyState';
+import PaymentPrompt from '@/components/PaymentPrompt';
 import { StudentProfile } from '@/types/student';
 
 const College = () => {
   const [students, setStudents] = useState<StudentProfile[]>([]);
+  const [showPaymentPrompt, setShowPaymentPrompt] = useState(true);
 
   useEffect(() => {
+    // Load user profile from localStorage if exists
     const userProfile = localStorage.getItem('userProfile');
     if (userProfile) {
-      const profile = JSON.parse(userProfile);
+      const profile = JSON.parse(userProfile) as StudentProfile;
       setStudents([profile]);
     }
 
+    // Mock student data
     const mockStudents: StudentProfile[] = [
       {
-        name: "Alice Johnson",
-        email: "alice.johnson@mit.edu",
-        collegeName: "MIT",
-        collegeAddress: "Cambridge, MA, United States",
-        profileImage: "",
-        collegeImage: "",
-        linkedinUrl: "https://linkedin.com/in/alicejohnson",
-        twitterUrl: "https://twitter.com/alicejohnson",
-        githubUrl: "https://github.com/alicejohnson",
-        collegeIdCard: "",
-        bio: "Computer Science student passionate about AI and machine learning. Love working on open source projects and contributing to the tech community.",
-        major: "Computer Science",
-        graduationYear: "2024"
+        name: 'Alice Johnson',
+        email: 'alice.johnson@mit.edu',
+        collegeName: 'MIT',
+        collegeAddress: 'Cambridge, MA, United States',
+        profileImage: '',
+        collegeImage: '',
+        linkedinUrl: 'https://linkedin.com/in/alicejohnson',
+        twitterUrl: 'https://twitter.com/alicejohnson',
+        githubUrl: 'https://github.com/alicejohnson',
+        collegeIdCard: '',
+        bio: 'Computer Science student passionate about AI and machine learning. Love working on open source projects and contributing to the tech community.',
+        major: 'Computer Science',
+        graduationYear: '2024'
       },
       {
-        name: "Bob Smith",
-        email: "bob.smith@stanford.edu",
-        collegeName: "Stanford University",
-        collegeAddress: "Stanford, CA, United States",
-        profileImage: "",
-        collegeImage: "",
-        linkedinUrl: "https://linkedin.com/in/bobsmith",
-        twitterUrl: "https://twitter.com/bobsmith",
-        githubUrl: "https://github.com/bobsmith",
-        collegeIdCard: "",
-        bio: "Engineering student with interest in robotics and automation. Part-time researcher at the robotics lab working on autonomous systems.",
-        major: "Mechanical Engineering",
-        graduationYear: "2025"
+        name: 'Bob Smith',
+        email: 'bob.smith@stanford.edu',
+        collegeName: 'Stanford University',
+        collegeAddress: 'Stanford, CA, United States',
+        profileImage: '',
+        collegeImage: '',
+        linkedinUrl: 'https://linkedin.com/in/bobsmith',
+        twitterUrl: 'https://twitter.com/bobsmith',
+        githubUrl: 'https://github.com/bobsmith',
+        collegeIdCard: '',
+        bio: 'Engineering student with interest in robotics and automation. Part-time researcher at the robotics lab working on autonomous systems.',
+        major: 'Mechanical Engineering',
+        graduationYear: '2025'
       },
       {
-        name: "Carol Davis",
-        email: "carol.davis@harvard.edu",
-        collegeName: "Harvard University",
-        collegeAddress: "Cambridge, MA, United States",
-        profileImage: "",
-        collegeImage: "",
-        linkedinUrl: "https://linkedin.com/in/caroldavis",
-        twitterUrl: "https://twitter.com/caroldavis",
-        githubUrl: "https://github.com/caroldavis",
-        collegeIdCard: "",
-        bio: "Business major with focus on entrepreneurship. Currently working on my startup idea in fintech and sustainable technology solutions.",
-        major: "Business Administration",
-        graduationYear: "2024"
+        name: 'Carol Davis',
+        email: 'carol.davis@harvard.edu',
+        collegeName: 'Harvard University',
+        collegeAddress: 'Cambridge, MA, United States',
+        profileImage: '',
+        collegeImage: '',
+        linkedinUrl: 'https://linkedin.com/in/caroldavis',
+        twitterUrl: 'https://twitter.com/caroldavis',
+        githubUrl: 'https://github.com/caroldavis',
+        collegeIdCard: '',
+        bio: 'Business major with focus on entrepreneurship. Currently working on my startup idea in fintech and sustainable technology solutions.',
+        major: 'Business Administration',
+        graduationYear: '2024'
       }
     ];
 
@@ -121,6 +125,11 @@ const College = () => {
       <div className="md:hidden fixed bottom-0 w-full z-50">
         <Navbar />
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentPrompt && (
+        <PaymentPrompt onClose={() => setShowPaymentPrompt(false)} />
+      )}
     </div>
   );
 };
