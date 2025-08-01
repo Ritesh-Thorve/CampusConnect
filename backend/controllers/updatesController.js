@@ -2,6 +2,7 @@ import prisma from '../config/db.js';
 import Joi from 'joi';
 import { validate } from '../utils/validator.js';
 
+// Joi schema for validation
 const updateSchema = Joi.object({
   title: Joi.string().required(),
   type: Joi.string().required(),
@@ -9,25 +10,73 @@ const updateSchema = Joi.object({
   link: Joi.string().uri().optional()
 });
 
+// Create an update (linked to user)
 export const createUpdate = async (req, res, next) => {
   try {
     validate(updateSchema, req.body);
-    const update = await prisma.update.create({ data: req.body });
+    const userId = req.user.userId;
+
+    const update = await prisma.update.create({
+      data: {
+        ...req.body,
+        userId
+      }
+    });
+
     res.json({ message: 'Update created', update });
   } catch (err) {
     next(err);
   }
 };
 
-export const getUpdates = async (req, res, next) => {
+// Get all updates
+export const getAllUpdates = async (req, res, next) => {
   try {
-    const updates = await prisma.update.findMany();
-    res.json(updates);
+    const updates = await prisma.update.findMany({
+      include: {
+        user: {
+          select: {
+            fullname: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    res.json({
+      count: updates.length,
+      updates
+    });
   } catch (err) {
     next(err);
   }
 };
 
+// Get updates created by the logged-in user
+export const getUserUpdates = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+
+    const updates = await prisma.update.findMany({
+      where: { userId },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    res.json({
+      count: updates.length,
+      updates
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// delete an update with that specific user only
 export const deleteUpdate = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -36,4 +85,4 @@ export const deleteUpdate = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-};
+};  

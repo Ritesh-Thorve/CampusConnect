@@ -26,3 +26,5 @@ export const getTrends = async (req, res, next) => {
     next(err);
   }
 };
+
+

@@ -1,20 +1,15 @@
-import { supabase } from '../config/supabase.js';
+import { supabase } from "../config/supabase.js";
+import { v4 as uuid } from "uuid";
 
 export const uploadFile = async (bucket, file) => {
-  const fileName = `uploads/${Date.now()}-${file.originalname}`;
-  
+  const ext = file.originalname.split(".").pop();
+  const fileName = `${uuid()}.${ext}`;
   const { data, error } = await supabase.storage
     .from(bucket)
-    .upload(fileName, file.buffer, {
-      contentType: file.mimetype,
-      upsert: false,
-    });
+    .upload(fileName, file.buffer, { contentType: file.mimetype });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new Error("File upload failed: " + error.message);
 
-  const { publicUrl } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(fileName).data;
-
-  return publicUrl;
+  const { data: publicUrl } = supabase.storage.from(bucket).getPublicUrl(fileName);
+  return publicUrl.publicUrl;
 };
