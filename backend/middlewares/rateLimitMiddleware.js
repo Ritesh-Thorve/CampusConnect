@@ -5,3 +5,10 @@ export const rateLimitMiddleware = rateLimit({
   max: 100, // Limit each IP to 100 requests per 15 minutes
   message: 'Too many requests from this IP, please try again later.'
 });
+
+// Rate limiter for signup & login (5 requests per minute)
+export const authLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 5,
+  message: { error: "Too many requests, please try again later." }
+});

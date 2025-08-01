@@ -8,10 +8,11 @@ import { rateLimitMiddleware } from './middlewares/rateLimitMiddleware.js';
 import { errorHandlerMiddleware } from './middlewares/errorHandlerMiddleware.js';
 
 import authRoutes from './routes/authRoutes.js';
-import profileRoutes from './routes/profileRoutes.js';
-import updatesRoutes from './routes/updatesRoutes.js';
-import trendsRoutes from './routes/trendsRoutes.js';
-import paymentRoutes from './routes/paymentRoutes.js';
+import profileRoute from './routes/profileRoute.js';
+import updatesRoute from './routes/updatesRoute.js';
+import trendsRoute from './routes/trendsRoute.js';
+import paymentRoute from './routes/paymentRoute.js';
+import studentsRoute from './routes/studentsRoute.js'
 
 dotenv.config();
 const app = express();
@@ -26,10 +27,11 @@ app.use(rateLimitMiddleware);
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/updates', updatesRoutes);
-app.use('/api/trends', trendsRoutes);
-app.use('/api/payment', paymentRoutes);
+app.use('/api/profile', profileRoute);
+app.use('/students', studentsRoute)
+app.use('/api/updates', updatesRoute);
+app.use('/api/trends', trendsRoute);
+app.use('/api/payment', paymentRoute);
 
 // Global Error Handler
 app.use(errorHandlerMiddleware);
