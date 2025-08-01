@@ -8,33 +8,39 @@ generator client {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  fullname    String
-  email       String   @unique
-  password    String?   
-  googleId    String? 
-  provider    String   
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  profile     Profile?
+  id         String     @id @default(cuid())
+  supabaseId String?    @unique
+  fullname   String
+  email      String     @unique
+  password   String?
+  googleId   String?
+  provider   String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  profile    Profile?
+  updates    Update[]
+  trends     Trend[]
+  payments   Payment[]
 }
 
 model Profile {
-  id              String @id @default(uuid())
-  userId          String @unique
-  user            User   @relation(fields: [userId], references: [id])
-  fullName        String
-  profileImg      String?
-  collegeName     String
-  collegeAddress  String
-  fieldOfStudy    String
-  graduationYear  Int
-  collegeImage    String?
-  collegeIdCard   String?
-  bio             String?
-  linkedIn        String?
-  twitter         String?
-  github          String?
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  fullName       String
+  profileImg     String?
+  collegeName    String
+  collegeAddress String
+  fieldOfStudy   String
+  graduationYear Int
+  collegeImage   String?
+  collegeIdCard  String?
+  bio            String?
+  linkedIn       String?
+  twitter        String?
+  github         String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Update {
@@ -43,6 +49,8 @@ model Update {
   type      String
   details   String
   link      String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
 }
 
@@ -51,14 +59,17 @@ model Trend {
   title       String
   description String
   tag         String
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
 }
 
 model Payment {
-  id            String   @id @default(uuid())
-  userId        String
-  amount        Int
-  razorpayId    String
-  status        String
-  createdAt     DateTime @default(now())
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  amount     Int
+  razorpayId String
+  status     String
+  createdAt  DateTime @default(now())
 }
