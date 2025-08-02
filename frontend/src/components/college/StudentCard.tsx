@@ -31,7 +31,7 @@ const StudentCard = ({ student }: StudentCardProps) => {
         {/* Profile Section with Image and Name side by side */}
         <div className="absolute -bottom-12 left-4 right-4 flex items-end gap-4">
           {/* Profile Image */}
-          <div className="w-24 h-24 rounded-3xl border-4 border-white shadow-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100 group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
+          <div className="w-24 h-24 rounded-full   border-4 border-white shadow-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100 group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
             {student.profileImage ? (
               <img 
                 src={student.profileImage} 
@@ -48,7 +48,7 @@ const StudentCard = ({ student }: StudentCardProps) => {
           
           {/* Student Name positioned to the right of image */}
           <div className="flex-1 pb-2 min-w-0">
-            <h3 className="text-xl font-bold text-white drop-shadow-lg group-hover:text-purple-200 transition-colors truncate">
+            <h3 className="text-xl font-bold text-Black drop-shadow-lg group-hover:text-blue-700 transition-colors truncate">
               {student.name}
             </h3>
           </div>
@@ -98,19 +98,19 @@ const StudentCard = ({ student }: StudentCardProps) => {
               </a>
             )}
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-gray-500">
               {student.githubUrl && (
-                <a href={student.githubUrl} className="text-gray-400 hover:text-gray-600 transition-colors" target="_blank" rel="noopener noreferrer">
+                <a href={student.githubUrl} className="text-gray-400 hover:text-gray-900 transition-colors" target="_blank" rel="noopener noreferrer">
                   <Github className="w-5 h-5" />
                 </a>
               )}
               {student.twitterUrl && (
-                <a href={student.twitterUrl} className="text-gray-400 hover:text-blue-500 transition-colors" target="_blank" rel="noopener noreferrer">
+                <a href={student.twitterUrl} className="text-gray-400 hover:text-blue-900 transition-colors" target="_blank" rel="noopener noreferrer">
                   <Twitter className="w-5 h-5" />
                 </a>
               )}
               {student.email && (
-                <a href={`mailto:${student.email}`} className="text-gray-400 hover:text-red-500 transition-colors">
+                <a href={`mailto:${student.email}`} className="text-gray-400 hover:text-red-900 transition-colors">
                   <Mail className="w-5 h-5" />
                 </a>
               )}

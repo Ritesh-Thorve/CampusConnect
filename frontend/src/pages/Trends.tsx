@@ -99,18 +99,22 @@ const Trends = () => {
     blog.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  function handleSearch(arg0: string): void {
+    throw new Error('Function not implemented.');
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Desktop Navbar */}
       <div className="hidden md:block">
         <Navbar />
       </div>
-      
+
       {/* Mobile Header (shown only on mobile) */}
       <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 py-3 px-4">
         <div className="flex items-center justify-center">
           {/* Logo */}
-          <img 
+          <img
             src="/compus-connect_logo.png" // Update with your logo path
             alt="Campus Connect"
             className="h-6 w-6 mr-2"
@@ -121,16 +125,18 @@ const Trends = () => {
       </div>
 
       {/* Main content */}
-      <main className="flex-1 px-4 py-6 pb-28 md:pb-10 overflow-y-auto">
+      <main className="flex-1 pb-28 md:pb-0 overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
         {/* Page Title */}
-        <header className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:text-3xl">
+        <div className="text-center mb-10 md:mb-16">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3">
             Trending <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Topics</span>
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base max-w-md mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
             Share your thoughts, experiences, and insights with the campus community
           </p>
-        </header>
+        </div>
+
 
         {/* Search & Create */}
         <section className="mb-6">
@@ -141,7 +147,7 @@ const Trends = () => {
                 placeholder="Search blogs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-10 rounded-lg border-2 text-sm"
+                className="pl-9 w-full md:w-64 rounded-lg border-2 text-sm"
               />
             </div>
             <Dialog>
@@ -185,62 +191,113 @@ const Trends = () => {
         </section>
 
         {/* Blogs */}
-        <section className="space-y-4">
+         <section className="space-y-6">
           {filteredBlogs.length > 0 ? (
             filteredBlogs.map((blog) => (
-              <Card key={blog.id} className="group shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start gap-3">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarFallback className="bg-indigo-100 text-indigo-600 text-xs">
+              <article 
+                key={blog.id} 
+                className="group bg-white/70 backdrop-blur-sm rounded-3xl border border-gray-200/50 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 cursor-pointer overflow-hidden"
+              >
+                {/* Card Header */}
+                <div className="p-8 pb-4">
+                  <div className="flex justify-between items-start gap-4 mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-lg">
                           {blog.author.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+                      </div>
                       <div>
-                        <h3 className="font-medium text-sm">{blog.author}</h3>
-                        <div className="flex items-center text-xs text-gray-500">
-                          <Calendar className="w-3 h-3 mr-1" />
-                          {new Date(blog.date).toLocaleDateString()}
+                        <h4 className="font-semibold text-gray-900 text-lg">{blog.author}</h4>
+                        <div className="flex items-center text-sm text-gray-500 gap-4">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            {new Date(blog.date).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                      <span className="flex items-center"><Eye className="w-3 h-3 mr-1" />{blog.views}</span>
-                      <span className="flex items-center"><Heart className="w-3 h-3 mr-1" />{blog.likes}</span>
-                      <span className="flex items-center"><MessageCircle className="w-3 h-3 mr-1" />{blog.comments}</span>
+                    
+                    {/* Engagement Metrics */}
+                    <div className="flex items-center gap-6 text-sm text-gray-500">
+                      <span className="flex items-center gap-2 hover:text-red-500 transition-colors">
+                        <Heart className="w-4 h-4" />
+                        <span className="font-medium">{blog.likes}</span>
+                      </span>
+                      <span className="flex items-center gap-2 hover:text-blue-500 transition-colors">
+                        <Eye className="w-4 h-4" />
+                        <span className="font-medium">{blog.views.toLocaleString()}</span>
+                      </span>
+                      <span className="flex items-center gap-2 hover:text-green-500 transition-colors">
+                        <MessageCircle className="w-4 h-4" />
+                        <span className="font-medium">{blog.comments}</span>
+                      </span>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <CardTitle className="text-lg mb-1 group-hover:text-indigo-600">
-                    {blog.title}
-                  </CardTitle>
-                  <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-                    {blog.content}
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    {blog.tags.map((tag) => (
-                      <span key={tag} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs">#{tag}</span>
-                    ))}
+
+                  {/* Content */}
+                  <div className="space-y-4">
+                    <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 leading-tight">
+                      {blog.title}
+                    </h2>
+                    <p className="text-gray-600 text-lg leading-relaxed line-clamp-2">
+                      {blog.content}
+                    </p>
+                    
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {blog.tags.map((tag) => (
+                        <span 
+                          key={tag} 
+                          className="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 rounded-full text-sm font-medium border border-blue-100 hover:from-blue-100 hover:to-indigo-100 transition-all duration-200 cursor-pointer"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+
+                {/* Hover Effect Gradient */}
+                <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+              </article>
             ))
           ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <PlusCircle className="w-6 h-6 text-indigo-600" />
+            <div className="text-center py-20">
+              <div className="relative mb-8">
+                <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                  <PlusCircle className="w-10 h-10 text-blue-600" />
+                </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+                  <span className="text-lg">✨</span>
+                </div>
               </div>
-              <h3 className="text-lg font-medium text-gray-600 mb-2">
-                {searchTerm ? 'No matching blogs found' : 'No blogs yet'}
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                {searchTerm ? 'No matching articles found' : 'No articles yet'}
               </h3>
-              <p className="text-sm text-gray-500">
-                {searchTerm ? 'Try different search terms' : 'Be the first to share!'}
+              <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+                {searchTerm 
+                  ? 'Try adjusting your search terms or explore different topics' 
+                  : 'Be the first to share your insights with the community!'
+                }
               </p>
+              {searchTerm && (
+                <button 
+                  onClick={() => handleSearch('')}
+                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-full hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  Clear Search
+                </button>
+              )}
             </div>
           )}
         </section>
+        </div>
       </main>
 
       {/* Footer (desktop only) */}
