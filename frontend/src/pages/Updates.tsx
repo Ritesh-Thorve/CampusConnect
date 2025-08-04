@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import {
-  Calendar, Clock, ExternalLink, Plus, Tag, Briefcase,
-  Trophy, Newspaper, GraduationCap
+  PlusCircle, Search, Calendar, Clock, ExternalLink,
+  Briefcase, Trophy, Newspaper, GraduationCap
 } from 'lucide-react';
-
+import {
+  Card, CardContent, CardHeader, CardTitle
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -26,20 +27,18 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import ReactMarkdown from 'react-markdown';
 
 interface Update {
   id: string;
   title: string;
   type: 'hackathon' | 'news' | 'internship' | 'job';
   detail: string;
-  description: string; // Added for preview text
+  description: string;
   link: string;
   createdAt: string;
-  time?: string; // Added for time display
+  time?: string;
 }
 
 const typeStyles: Record<Update['type'], string> = {
@@ -86,7 +85,7 @@ const Updates = () => {
       title: formData.title,
       type: formData.type as Update['type'],
       detail: formData.detail,
-      description: formData.description || formData.detail.substring(0, 150) + '...', // Auto-generate if not provided
+      description: formData.description || formData.detail.substring(0, 150) + '...',
       link: formData.link,
       createdAt: now.toISOString(),
       time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
@@ -114,105 +113,105 @@ const Updates = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      {/* Desktop Navbar */}
       <div className="hidden md:block">
         <Navbar />
       </div>
 
+      {/* Mobile Header */}
+      <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 py-3 px-4">
+        <div className="flex items-center justify-center">
+          <img
+            src="/compus-connect_logo.png"
+            alt="Campus Connect"
+            className="h-6 w-6 mr-2"
+          />
+          <span className="text-sm font-semibold text-gray-800">Campus Updates</span>
+        </div>
+      </div>
+
+      {/* Main Content */}
       <main className="flex-1 pb-28 md:pb-0 overflow-y-auto">
-        <div className="container mx-auto px-4 py-8">
-          {/* Page Header - matching original style */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
-              Campus Updates
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
+          {/* Page Header */}
+          <div className="text-center mb-10 md:mb-16">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3">
+              Campus <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Updates</span>
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
               Stay up to date with the latest opportunities and news
             </p>
           </div>
 
           {/* Filters */}
-          <div className="flex flex-col md:flex-row items-center gap-4 justify-between mb-8">
-            <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
-                placeholder="Search updates"
+                placeholder="Search updates..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full md:w-64"
+                className="pl-9 w-full md:w-64 rounded-lg border-2 text-sm"
               />
-              <Select onValueChange={setFilterType} defaultValue="all">
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Filter by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="hackathon">Hackathon</SelectItem>
-                  <SelectItem value="news">News</SelectItem>
-                  <SelectItem value="internship">Internship</SelectItem>
-                  <SelectItem value="job">Job</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
-
-            <Button onClick={() => setIsModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Update
+            <Select onValueChange={setFilterType} defaultValue="all">
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Filter by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="hackathon">Hackathon</SelectItem>
+                <SelectItem value="news">News</SelectItem>
+                <SelectItem value="internship">Internship</SelectItem>
+                <SelectItem value="job">Job</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white h-10 px-4 rounded-lg"
+            >
+              <PlusCircle className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Add Update</span>
             </Button>
           </div>
 
-          {/* Updates Grid - matching original layout */}
+          {/* Updates Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredUpdates.map((update, index) => (
-              <Card
-                key={update.id}
-                className="group relative overflow-hidden bg-gradient-card border-0 shadow-soft hover:shadow-elegant transition-all duration-300 hover:scale-105 hover:shadow-glow cursor-pointer"
-                style={{
-                  animationDelay: `${index * 150}ms`,
-                }}
+            {filteredUpdates.map((update) => (
+              <Card 
+                key={update.id} 
+                className="hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => setSelectedUpdate(update)}
               >
-                <div className="absolute inset-0 bg-gradient-subtle opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
-                <CardHeader className="relative z-10 pb-3">
-                  <div className="flex items-start justify-between mb-2">
-                    <Badge className={typeStyles[update.type]} variant="secondary">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <Badge className={typeStyles[update.type]}>
                       {update.type.charAt(0).toUpperCase() + update.type.slice(1)}
                     </Badge>
-                  </div>
-                  <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors duration-300">
-                    {update.title}
-                  </CardTitle>
-                </CardHeader>
-
-                <CardContent className="relative z-10">
-                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
-                    {update.description || update.detail.substring(0, 150) + '...'}
-                  </p>
-                  
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>{formatDate(update.createdAt)}</span>
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      {formatDate(update.createdAt)}
                     </div>
-                    {update.time && (
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{update.time}</span>
-                      </div>
-                    )}
                   </div>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-3 w-full group-hover:bg-primary/10 transition-colors duration-300"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedUpdate(update);
-                    }}
-                  >
-                    Read Full Update
-                    <ExternalLink className="w-3 h-3 ml-2" />
-                  </Button>
+                  <CardTitle className="mt-2 text-lg">{update.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
+                    {update.description}
+                  </p>
+                  {update.link && (
+                    <div className="flex justify-end">
+                      <a
+                        href={update.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Visit Link <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -222,11 +221,14 @@ const Updates = () => {
 
       {/* Add Update Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[625px]">
           <DialogHeader>
             <DialogTitle>Add New Update</DialogTitle>
+            <DialogDescription>
+              Share the latest opportunities with the campus community
+            </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="grid gap-4 py-4">
             <div>
               <Label>Title</Label>
               <Input name="title" value={formData.title} onChange={handleInputChange} required />
@@ -247,16 +249,16 @@ const Updates = () => {
             </div>
             <div>
               <Label>Short Description (for preview)</Label>
-              <Textarea 
-                name="description" 
-                value={formData.description} 
+              <Textarea
+                name="description"
+                value={formData.description}
                 onChange={handleInputChange}
                 placeholder="Brief description shown on the card..."
                 rows={2}
               />
             </div>
             <div>
-              <Label>Full Details (Markdown Supported)</Label>
+              <Label>Full Details</Label>
               <Textarea name="detail" value={formData.detail} onChange={handleInputChange} required />
             </div>
             <div>
@@ -270,7 +272,7 @@ const Updates = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Full Detail Modal - matching original style */}
+      {/* Update Details Modal */}
       <Dialog open={!!selectedUpdate} onOpenChange={() => setSelectedUpdate(null)}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           {selectedUpdate && (
@@ -278,11 +280,9 @@ const Updates = () => {
               <DialogHeader className="space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Badge className={typeStyles[selectedUpdate.type]} variant="secondary">
-                        {selectedUpdate.type.charAt(0).toUpperCase() + selectedUpdate.type.slice(1)}
-                      </Badge>
-                    </div>
+                    <Badge className={typeStyles[selectedUpdate.type]}>
+                      {selectedUpdate.type.charAt(0).toUpperCase() + selectedUpdate.type.slice(1)}
+                    </Badge>
                     <DialogTitle className="text-2xl font-bold">
                       {selectedUpdate.title}
                     </DialogTitle>
@@ -301,40 +301,39 @@ const Updates = () => {
                     </div>
                   )}
                 </div>
-                
-                <DialogDescription className="text-base">
-                  {selectedUpdate.description || selectedUpdate.detail.substring(0, 200) + '...'}
-                </DialogDescription>
               </DialogHeader>
 
-              <div className="mt-6">
-                <div className="prose prose-sm max-w-none">
-                  <ReactMarkdown>{selectedUpdate.detail}</ReactMarkdown>
-                </div>
+              <div className="mt-6 space-y-4">
+                <p className="text-gray-700 whitespace-pre-wrap">
+                  {selectedUpdate.detail}
+                </p>
+                
+                {selectedUpdate.link && (
+                  <div className="pt-4 border-t">
+                    <a
+                      href={selectedUpdate.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Visit Link
+                    </a>
+                  </div>
+                )}
               </div>
-
-              {selectedUpdate.link && (
-                <div className="mt-6 pt-4 border-t">
-                  <a
-                    href={selectedUpdate.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Visit Link
-                  </a>
-                </div>
-              )}
             </>
           )}
         </DialogContent>
       </Dialog>
 
+      {/* Footer */}
       <div className="hidden md:block">
         <Footer />
       </div>
-      <div className="md:hidden fixed bottom-0 w-full z-50">
+
+      {/* Mobile Bottom Navbar */}
+      <div className="md:hidden fixed bottom-0 w-full z-20">
         <Navbar />
       </div>
     </div>

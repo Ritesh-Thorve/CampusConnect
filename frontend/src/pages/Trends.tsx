@@ -222,22 +222,6 @@ const Trends = () => {
                         </div>
                       </div>
                     </div>
-                    
-                    {/* Engagement Metrics */}
-                    <div className="flex items-center gap-6 text-sm text-gray-500">
-                      <span className="flex items-center gap-2 hover:text-red-500 transition-colors">
-                        <Heart className="w-4 h-4" />
-                        <span className="font-medium">{blog.likes}</span>
-                      </span>
-                      <span className="flex items-center gap-2 hover:text-blue-500 transition-colors">
-                        <Eye className="w-4 h-4" />
-                        <span className="font-medium">{blog.views.toLocaleString()}</span>
-                      </span>
-                      <span className="flex items-center gap-2 hover:text-green-500 transition-colors">
-                        <MessageCircle className="w-4 h-4" />
-                        <span className="font-medium">{blog.comments}</span>
-                      </span>
-                    </div>
                   </div>
 
                   {/* Content */}
