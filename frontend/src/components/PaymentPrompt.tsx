@@ -47,7 +47,7 @@ const PaymentPrompt = ({ onClose }) => {
 
           <div className="space-y-3">
             <div className="text-3xl font-bold text-primary">
-              $100
+              ₹100
               <span className="text-sm text-muted-foreground font-normal ml-1">one-time</span>
             </div>
 

@@ -4,7 +4,7 @@ import PlatformFeatures from '@/components/PlatformFeatures';
 import FeaturedContent from '@/components/FeaturedContent';
 import Footer from '@/components/Footer';
 
-const Index = () => {
+const Home = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
       {/* Desktop Navbar (hidden on mobile) */}
@@ -44,4 +44,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Home;
