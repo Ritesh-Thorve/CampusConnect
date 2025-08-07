@@ -1,5 +1,3 @@
-'use client';
-
 import {
   Dialog,
   DialogContent,
@@ -20,12 +18,12 @@ import {
 } from '@/components/ui/select';
 
 interface Props {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  formData: any;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  onTypeChange: (value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; // Callback to handle dialog open state change
+  formData: any; // Object holding form field values
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void; 
+  onTypeChange: (value: string) => void; 
+  onSubmit: (e: React.FormEvent) => void; // Form submission handler
 }
 
 export const AddUpdateDialog = ({
@@ -36,19 +34,35 @@ export const AddUpdateDialog = ({
   onTypeChange,
   onSubmit
 }: Props) => (
+  
+  // Dialog wrapper controlled by `open` prop
   <Dialog open={open} onOpenChange={onOpenChange}>
+    {/* Dialog content panel with max width styling */}
     <DialogContent className="sm:max-w-[625px]">
+      
+      {/* Dialog header with title and description */}
       <DialogHeader>
         <DialogTitle>Add New Update</DialogTitle>
         <DialogDescription>
           Share the latest opportunities with the campus community
         </DialogDescription>
       </DialogHeader>
+
+      {/* Form for adding update with spacing */}
       <form onSubmit={onSubmit} className="grid gap-4 py-4">
+        
+        {/* Title input field */}
         <div>
           <Label>Title</Label>
-          <Input name="title" value={formData.title} onChange={onChange} required />
+          <Input
+            name="title"
+            value={formData.title}
+            onChange={onChange}
+            required
+          />
         </div>
+
+        {/* Type select dropdown */}
         <div>
           <Label>Type</Label>
           <Select onValueChange={onTypeChange}>
@@ -56,6 +70,7 @@ export const AddUpdateDialog = ({
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
+              {/* Options for type selection */}
               <SelectItem value="hackathon">Hackathon</SelectItem>
               <SelectItem value="news">News</SelectItem>
               <SelectItem value="internship">Internship</SelectItem>
@@ -63,6 +78,8 @@ export const AddUpdateDialog = ({
             </SelectContent>
           </Select>
         </div>
+
+        {/* Short description textarea for preview */}
         <div>
           <Label>Short Description (for preview)</Label>
           <Textarea
@@ -73,14 +90,30 @@ export const AddUpdateDialog = ({
             rows={2}
           />
         </div>
+
+        {/* Full details textarea, required */}
         <div>
           <Label>Full Details</Label>
-          <Textarea name="detail" value={formData.detail} onChange={onChange} required />
+          <Textarea
+            name="detail"
+            value={formData.detail}
+            onChange={onChange}
+            required
+          />
         </div>
+
+        {/* Link input field, required */}
         <div>
           <Label>Link</Label>
-          <Input name="link" value={formData.link} onChange={onChange} required />
+          <Input
+            name="link"
+            value={formData.link}
+            onChange={onChange}
+            required
+          />
         </div>
+
+        {/* Submit button */}
         <Button type="submit" className="w-full bg-indigo-600 text-white hover:bg-indigo-700">
           Submit
         </Button>

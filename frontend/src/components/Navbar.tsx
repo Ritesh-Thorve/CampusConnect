@@ -15,12 +15,13 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Desktop Navbar - Rounded Design */}
+      {/* DESKTOP NAVBAR */}
       <div className="hidden md:block sticky top-0 z-50 px-4 pt-4">
         <nav className="bg-white/90 backdrop-blur-sm border rounded-full shadow-sm hover:shadow-md transition-all duration-300 max-w-7xl mx-auto">
           <div className="px-6">
             <div className="flex justify-between items-center h-16">
-              {/* Logo with Gradient */}
+
+              {/* Logo */}
               <Link
                 to="/"
                 className="flex items-center space-x-2 group ml-1 hover:opacity-90 transition-opacity"
@@ -37,8 +38,7 @@ const Navbar = () => {
                 </span>
               </Link>
 
-
-              {/* Navigation Links - Rounded Items */}
+              {/* Main Nav Links */}
               <div className="flex items-center space-x-1">
                 {navItems.slice(0, -1).map((item) => {
                   const Icon = item.icon;
@@ -47,10 +47,11 @@ const Navbar = () => {
                     <Link
                       key={item.name}
                       to={item.path}
-                      className={`flex items-center space-x-2 px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${isActive
-                        ? 'text-indigo-600 bg-indigo-50/60'
-                        : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/30'
-                        }`}
+                      className={`flex items-center space-x-2 px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'text-indigo-600 bg-indigo-50/60'
+                          : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/30'
+                      }`}
                     >
                       <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.3px]' : ''}`} />
                       <span>{item.name}</span>
@@ -59,7 +60,7 @@ const Navbar = () => {
                 })}
               </div>
 
-              {/* Auth Buttons - Rounded */}
+              {/* Auth Buttons */}
               <div className="flex items-center space-x-3 mr-1">
                 <Link to="/login">
                   <Button
@@ -85,9 +86,9 @@ const Navbar = () => {
         </nav>
       </div>
 
-      {/* Mobile Bottom Navigation - Fixed */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50 shadow-xl">
-        <div className="flex justify-around items-center pt-2 pb-3 safe-bottom">
+      {/* MOBILE BOTTOM NAVIGATION */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 w-full z-50 bg-white border-t border-gray-200 shadow-xl">
+        <nav className="flex justify-around items-center pt-2 pb-3 safe-bottom">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -95,8 +96,9 @@ const Navbar = () => {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex flex-col items-center p-1 w-full transition-colors duration-200 ${isActive ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                className={`flex flex-col items-center p-1 w-full transition-colors duration-200 ${
+                  isActive ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'
+                }`}
               >
                 <div className={`p-2 rounded-full ${isActive ? 'bg-indigo-50' : ''}`}>
                   <Icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5px]' : ''}`} />
@@ -105,11 +107,8 @@ const Navbar = () => {
               </Link>
             );
           })}
-        </div>
+        </nav>
       </div>
-
-      {/* Spacer for mobile bottom nav */}
-      <div className="pb-20 md:pb-0"></div>
     </>
   );
 };

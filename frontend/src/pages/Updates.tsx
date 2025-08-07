@@ -25,6 +25,7 @@ const Updates = () => {
   const [selectedUpdate, setSelectedUpdate] = useState<Update | null>(null);
   const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+
   const [formData, setFormData] = useState({
     title: '',
     type: '',
@@ -50,7 +51,9 @@ const Updates = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     const now = new Date();
+
     const newUpdate: Update = {
       id: Date.now().toString(),
       title: formData.title,
@@ -61,9 +64,11 @@ const Updates = () => {
       createdAt: now.toISOString(),
       time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     };
+
     const updatedUpdates = [newUpdate, ...updates];
     setUpdates(updatedUpdates);
     localStorage.setItem('updates', JSON.stringify(updatedUpdates));
+
     setFormData({ title: '', type: '', detail: '', description: '', link: '' });
     setIsModalOpen(false);
   };
@@ -76,12 +81,28 @@ const Updates = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+
+      {/* Desktop Navbar */}
       <div className="hidden md:block">
         <Navbar />
       </div>
 
-      <main className="flex-1 pb-28 md:pb-0 overflow-y-auto">
+      {/* Mobile Top Header */}
+      <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 py-3 px-4">
+        <div className="flex items-center justify-center">
+          <img
+            src="/compus-connect_logo.png"
+            alt="Campus Connect"
+            className="h-6 w-6 mr-2"
+          />
+          <span className="text-sm font-semibold text-gray-800">Campus Connect</span>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <main className="flex-1 pb-32 md:pb-0 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
+
           <div className="text-center mb-10 md:mb-16">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3">
               Campus <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Updates</span>
@@ -119,9 +140,12 @@ const Updates = () => {
         onClose={() => setSelectedUpdate(null)}
       />
 
+      {/* Desktop Footer */}
       <div className="hidden md:block">
         <Footer />
       </div>
+
+      {/* Mobile Navbar (fixed at bottom) */}
       <div className="md:hidden fixed bottom-0 w-full z-20">
         <Navbar />
       </div>

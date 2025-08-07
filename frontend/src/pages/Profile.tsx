@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -51,7 +49,10 @@ const Profile = () => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'college' | 'collegeId') => {
+  const handleImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: 'profile' | 'college' | 'collegeId'
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -59,7 +60,11 @@ const Profile = () => {
         const imageUrl = event.target?.result as string;
         setProfileData({
           ...profileData,
-          [type === 'profile' ? 'profileImage' : type === 'college' ? 'collegeImage' : 'collegeIdCard']: imageUrl
+          [type === 'profile'
+            ? 'profileImage'
+            : type === 'college'
+            ? 'collegeImage'
+            : 'collegeIdCard']: imageUrl
         });
       };
       reader.readAsDataURL(file);
@@ -71,23 +76,31 @@ const Profile = () => {
     localStorage.setItem('userProfile', JSON.stringify(profileData));
     toast({
       title: 'Profile Updated',
-      description: 'Your profile has been successfully updated!',
+      description: 'Your profile has been successfully updated!'
     });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
+      {/* Desktop Navbar */}
       <div className="hidden md:block">
         <Navbar />
       </div>
+
+      {/* Mobile Header */}
       <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 py-3 px-4">
         <div className="flex items-center justify-center">
-          <img src="/compus-connect_logo.png" alt="Campus Connect" className="h-6 w-6 mr-2 object-cover" />
+          <img
+            src="/compus-connect_logo.png"
+            alt="Campus Connect"
+            className="h-6 w-6 mr-2 object-cover"
+          />
           <span className="text-sm font-semibold text-gray-800">Campus Connect</span>
         </div>
       </div>
 
-      <main className="flex-1 pb-28 md:pb-0 overflow-y-auto">
+      {/* Main Content */}
+      <main className="min-h-screen flex-1 pb-28 md:pb-0 overflow-y-auto relative z-0">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
           <ProfileForm
             profileData={profileData}
@@ -98,9 +111,12 @@ const Profile = () => {
         </div>
       </main>
 
+      {/* Footer for desktop */}
       <div className="hidden md:block">
         <Footer />
       </div>
+
+      {/* Mobile Bottom Navbar */}
       <div className="md:hidden fixed bottom-0 w-full z-50">
         <Navbar />
       </div>
