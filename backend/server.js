@@ -28,7 +28,7 @@ app.use(rateLimitMiddleware);
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoute);
-app.use('/students', studentsRoute)
+app.use('/api/students', studentsRoute)
 app.use('/api/updates', updatesRoute);
 app.use('/api/trends', trendsRoute);
 app.use('/api/payment', paymentRoute);
