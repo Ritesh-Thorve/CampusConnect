@@ -3,90 +3,96 @@ import { uploadFile } from "../utils/upload.js";
 import Joi from "joi";
 import { validate } from "../utils/validator.js";
 
-// Joi Schema for Profile Validation
+// Joi Schema
 const profileSchema = Joi.object({
   fullName: Joi.string().required(),
   collegeName: Joi.string().required(),
   collegeAddress: Joi.string().required(),
   fieldOfStudy: Joi.string().required(),
-  graduationYear: Joi.number().integer().min(2000).max(2100).required(),
-  bio: Joi.string().max(300).optional(),
+  graduationYear: Joi.number().integer().min(1900).max(2100).required(),
+  bio: Joi.string().optional(),
   linkedIn: Joi.string().uri().optional(),
-  twitter: Joi.string().uri().optional(),
-  github: Joi.string().uri().optional()
 });
 
 // Create or Update Profile
 export const createOrUpdateProfile = async (req, res) => {
   try {
-    // Validate request body
-    validate(profileSchema, req.body);
-
+    // Extract userId from middleware
     const userId = req.user.userId;
-    const uploadedFiles = {};
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-    // Handle file uploads in parallel
-    const fileUploads= [];
+    // Validate request body
+    const { error } = validate(profileSchema, req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+
+    // ✅ Uploaded file URLs
+    const uploadedFiles = {};
+    const fileUploads = [];
 
     if (req.files?.profileImg) {
-      uploadTasks.push(
+      fileUploads.push(
         uploadFile("profile-images", req.files.profileImg[0])
-          .then(url => uploadedFiles.profileImg = url)
+          .then(url => (uploadedFiles.profileImg = url))
       );
     }
-
     if (req.files?.collegeImage) {
-      uploadTasks.push(
+      fileUploads.push(
         uploadFile("college-images", req.files.collegeImage[0])
-          .then(url => uploadedFiles.collegeImage = url)
+          .then(url => (uploadedFiles.collegeImage = url))
       );
     }
-
     if (req.files?.collegeIdCard) {
-      uploadTasks.push(
-        uploadFile("id-cards", req.files.collegeIdCard[0])
-          .then(url => uploadedFiles.collegeIdCard = url)
+      fileUploads.push(
+        uploadFile("college-id-cards", req.files.collegeIdCard[0])
+          .then(url => (uploadedFiles.collegeIdCard = url))
       );
     }
 
-    await Promise.all(uploadTasks);
+    // ✅ Wait for all uploads
+    await Promise.all(fileUploads);
 
-    const profileData = { ...req.body, ...uploadedFiles };
-
-    // Upsert profile (Create if not exists, else update)
+    // ✅ Create or update profile in DB
     const profile = await prisma.profile.upsert({
       where: { userId },
-      update: profileData,
-      create: { userId, ...profileData }
+      update: {
+        ...req.body,
+        ...uploadedFiles,
+      },
+      create: {
+        userId,
+        ...req.body,
+        ...uploadedFiles,
+      },
     });
 
-    return res.json({ message: "Profile saved successfully", profile });
-  } catch (error) {
-    console.error("Error in createOrUpdateProfile:", error);
-    return res.status(500).json({ error: "Unable to save profile" });
+    res.json({ message: "Profile saved successfully", profile });
+  } catch (err) {
+    console.error("Error saving profile:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
-//Get Single User Profile
-export const getProfile = async (req, res) => {
+// Get current user profile
+export const getMyProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
 
     const profile = await prisma.profile.findUnique({
       where: { userId },
-      include: {
-        user: { select: { fullname: true, email: true } }
-      }
     });
 
     if (!profile) {
       return res.status(404).json({ error: "Profile not found" });
     }
 
-    return res.json(profile);
-  } catch (error) {
-    console.error("Error in getProfile:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    res.json(profile);
+  } catch (err) {
+    console.error("Error fetching profile:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
