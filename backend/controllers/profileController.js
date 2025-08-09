@@ -3,83 +3,94 @@ import { uploadFile } from "../utils/upload.js";
 import Joi from "joi";
 import { validate } from "../utils/validator.js";
 
-// Joi Schema
+// Joi Schema 
 const profileSchema = Joi.object({
   fullName: Joi.string().required(),
   collegeName: Joi.string().required(),
   collegeAddress: Joi.string().required(),
   fieldOfStudy: Joi.string().required(),
-  graduationYear: Joi.number().integer().min(1900).max(2100).required(),
+  graduationYear: Joi.number().integer().min(4).required(),
   bio: Joi.string().optional(),
+
+  // Social media links
   linkedIn: Joi.string().uri().optional(),
+  twitter: Joi.string().uri().optional(),
+  github: Joi.string().uri().optional(),
+  instagram: Joi.string().uri().optional(),
 });
 
 // Create or Update Profile
 export const createOrUpdateProfile = async (req, res) => {
   try {
-    // Extract userId from middleware
-    const userId = req.user.userId;
+    const userId = req.user?.userId;
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Validate request body
-    const { error } = validate(profileSchema, req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
+    // Convert graduationYear to an integer if present (form-data sends strings)
+    if (req.body.graduationYear) {
+      req.body.graduationYear = parseInt(req.body.graduationYear, 10);
     }
 
-    // ✅ Uploaded file URLs
+    // Validate request body (allow Joi to handle types)
+    validate(profileSchema, req.body);
+
     const uploadedFiles = {};
     const fileUploads = [];
 
-    if (req.files?.profileImg) {
+    // Profile Image Upload
+    if (req.files?.profileImg?.[0]) {
       fileUploads.push(
         uploadFile("profile-images", req.files.profileImg[0])
           .then(url => (uploadedFiles.profileImg = url))
       );
     }
-    if (req.files?.collegeImage) {
+
+    // College Image Upload
+    if (req.files?.collegeImage?.[0]) {
       fileUploads.push(
         uploadFile("college-images", req.files.collegeImage[0])
           .then(url => (uploadedFiles.collegeImage = url))
       );
     }
-    if (req.files?.collegeIdCard) {
+
+    // College ID Card Upload
+    if (req.files?.collegeIdCard?.[0]) {
       fileUploads.push(
         uploadFile("college-id-cards", req.files.collegeIdCard[0])
           .then(url => (uploadedFiles.collegeIdCard = url))
       );
     }
 
-    // ✅ Wait for all uploads
+    // Wait for all uploads to complete
     await Promise.all(fileUploads);
 
-    // ✅ Create or update profile in DB
+    // Save profile in DB (create if not exists, else update)
     const profile = await prisma.profile.upsert({
       where: { userId },
-      update: {
-        ...req.body,
-        ...uploadedFiles,
-      },
-      create: {
-        userId,
-        ...req.body,
-        ...uploadedFiles,
-      },
+      update: { ...req.body, ...uploadedFiles },
+      create: { userId, ...req.body, ...uploadedFiles },
     });
 
     res.json({ message: "Profile saved successfully", profile });
   } catch (err) {
     console.error("Error saving profile:", err);
+
+    if (err.isJoi) {
+      return res.status(400).json({ error: err.message });
+    }
+
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// Get current user profile
+// Get My Profile 
 export const getMyProfile = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
     const profile = await prisma.profile.findUnique({
       where: { userId },
@@ -96,37 +107,32 @@ export const getMyProfile = async (req, res) => {
   }
 };
 
-// All Profiles (With Filters & Pagination)
+// Get All Profiles 
 export const getAllProfiles = async (req, res) => {
   try {
-    const {
-      collegeName,
-      graduationYear,
-      page = 1,
-      limit = 10
-    } = req.query;
-
+    const { collegeName, graduationYear, page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
 
     const profiles = await prisma.profile.findMany({
       where: {
         ...(collegeName && { collegeName }),
-        ...(graduationYear && { graduationYear: parseInt(graduationYear) })
+        ...(graduationYear && { graduationYear: parseInt(graduationYear) }),
       },
       include: {
-        user: { select: { fullname: true, email: true } }
+        user: { select: { fullname: true, email: true } },
       },
       orderBy: { createdAt: "desc" },
       skip: parseInt(skip),
-      take: parseInt(limit)
+      take: parseInt(limit),
     });
 
     return res.json({
       count: profiles.length,
-      profiles
+      profiles,
     });
   } catch (error) {
     console.error("Error in getAllProfiles:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+  
