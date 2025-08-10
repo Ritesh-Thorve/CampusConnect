@@ -11,8 +11,6 @@ const profileSchema = Joi.object({
   fieldOfStudy: Joi.string().required(),
   graduationYear: Joi.number().integer().min(4).required(),
   bio: Joi.string().optional(),
-
-  // Social media links
   linkedIn: Joi.string().uri().optional(),
   twitter: Joi.string().uri().optional(),
   github: Joi.string().uri().optional(),
@@ -27,7 +25,6 @@ export const createOrUpdateProfile = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Convert graduationYear to an integer if present (form-data sends strings)
     if (req.body.graduationYear) {
       req.body.graduationYear = parseInt(req.body.graduationYear, 10);
     }
