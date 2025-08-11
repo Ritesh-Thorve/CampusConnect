@@ -4,7 +4,7 @@ import { authMiddleware } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/', authMiddleware, createTrend);
+router.post('/create', authMiddleware, createTrend);
 router.get('/', getTrends);
 
 export default router;

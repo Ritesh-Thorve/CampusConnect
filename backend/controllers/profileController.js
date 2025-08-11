@@ -81,16 +81,21 @@ export const createOrUpdateProfile = async (req, res) => {
   }
 };
 
-// Get My Profile 
+// Get My Profile
 export const getMyProfile = async (req, res) => {
   try {
-    const userId = req.user?.userId;
+    // Ensure userId exists and is an integer
+    const userId = parseInt(req.user?.userId, 10);
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const profile = await prisma.profile.findUnique({
+    // Use findFirst for safety (works whether userId is unique or not)
+    const profile = await prisma.profile.findFirst({
       where: { userId },
+      include: {
+        user: { select: { fullname: true, email: true } },
+      },
     });
 
     if (!profile) {
@@ -104,27 +109,41 @@ export const getMyProfile = async (req, res) => {
   }
 };
 
-// Get All Profiles 
+// Get All Profiles
 export const getAllProfiles = async (req, res) => {
   try {
-    const { collegeName, graduationYear, page = 1, limit = 10 } = req.query;
+    // Parse pagination params safely
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
 
-    const profiles = await prisma.profile.findMany({
-      where: {
-        ...(collegeName && { collegeName }),
-        ...(graduationYear && { graduationYear: parseInt(graduationYear) }),
-      },
-      include: {
-        user: { select: { fullname: true, email: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      skip: parseInt(skip),
-      take: parseInt(limit),
-    });
+    // Extract filters
+    const { collegeName, graduationYear } = req.query;
+
+    // Build where clause dynamically
+    const where = {
+      ...(collegeName && { collegeName }),
+      ...(graduationYear && { graduationYear: parseInt(graduationYear, 10) }),
+    };
+
+    // Fetch paginated results and total count in parallel
+    const [profiles, total] = await Promise.all([
+      prisma.profile.findMany({
+        where,
+        include: {
+          user: { select: { fullname: true, email: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.profile.count({ where }),
+    ]);
 
     return res.json({
-      count: profiles.length,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
       profiles,
     });
   } catch (error) {
@@ -132,4 +151,5 @@ export const getAllProfiles = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
   

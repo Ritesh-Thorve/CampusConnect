@@ -1,8 +1,8 @@
 import express from 'express';
-import { getAllProfiles } from '../controllers/profileController.js'
+import { getAllProfiles } from '../controllers/profileController.js';
 
 const router = express.Router();
 
-router.get('/students', getAllProfiles)
+router.get('/profiles', getAllProfiles)
 
 export default router

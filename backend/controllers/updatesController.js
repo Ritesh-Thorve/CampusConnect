@@ -23,7 +23,7 @@ export const createUpdate = async (req, res, next) => {
       }
     });
 
-    res.json({ message: 'Update created', update });
+    res.status(201).json({ message: 'Update created', update });
   } catch (err) {
     next(err);
   }
@@ -76,13 +76,27 @@ export const getUserUpdates = async (req, res, next) => {
   }
 };
 
-// delete an update with that specific user only
+// Delete an update (only by the creator)
 export const deleteUpdate = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Ensure the update belongs to the logged-in user
+    const update = await prisma.update.findUnique({ where: { id } });
+
+    if (!update) {
+      return res.status(404).json({ message: 'Update not found' });
+    }
+
+    if (update.userId !== userId) {
+      return res.status(403).json({ message: 'Not authorized to delete this update' });
+    }
+
     await prisma.update.delete({ where: { id } });
-    res.json({ message: 'Update deleted' });
+
+    res.json({ message: 'Update deleted successfully' });
   } catch (err) {
     next(err);
   }
-};  
+};
