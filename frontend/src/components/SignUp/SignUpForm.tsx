@@ -1,6 +1,6 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowRight, User, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, User, Mail, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,9 @@ import toast from "react-hot-toast";
 const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { loading } = useAppSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     fullname: "",
@@ -20,10 +23,6 @@ const SignUpForm = () => {
     confirmPassword: "",
   });
 
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { loading } = useAppSelector((state) => state.auth);
-
   // Handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -31,13 +30,8 @@ const SignUpForm = () => {
   };
 
   // Toggle password visibility
-  const togglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword((prev) => !prev);
-  };
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
+  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword((prev) => !prev);
 
   // Submit handler
   const handleSubmit = (e: FormEvent) => {
@@ -58,7 +52,9 @@ const SignUpForm = () => {
       .unwrap()
       .then(() => {
         toast.success("Account created successfully!");
-        navigate("/profile");
+        setTimeout(() => {
+          navigate("/profile");
+        }, 2000); // ⏳ Delay navigation for 2 seconds
       })
       .catch((err) => {
         toast.error(err || "Failed to create account");
@@ -96,9 +92,7 @@ const SignUpForm = () => {
                 className="w-6 h-6"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
-              >
-                {/* Google icon path omitted */}
-              </svg>
+              ></svg>
               <span className="text-lg">Continue with Google</span>
             </div>
           </Button>
@@ -184,21 +178,14 @@ const SignUpForm = () => {
                   onClick={togglePasswordVisibility}
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-6 h-6" />
-                  ) : (
-                    <Eye className="w-6 h-6" />
-                  )}
+                  {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
                 </button>
               </div>
             </div>
 
             {/* Confirm Password */}
             <div className="space-y-2">
-              <Label
-                htmlFor="confirmPassword"
-                className="text-sm font-semibold text-gray-700"
-              >
+              <Label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-700">
                 Confirm Password
               </Label>
               <div className="relative">
@@ -217,11 +204,7 @@ const SignUpForm = () => {
                   onClick={toggleConfirmPasswordVisibility}
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-6 h-6" />
-                  ) : (
-                    <Eye className="w-6 h-6" />
-                  )}
+                  {showConfirmPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
                 </button>
               </div>
             </div>
@@ -230,10 +213,17 @@ const SignUpForm = () => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl text-lg font-semibold shadow-lg"
+              className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl text-lg font-semibold shadow-lg flex items-center justify-center"
             >
-              {loading ? "Creating Account..." : "Create Account"}
-              <ArrowRight className="ml-2 w-5 h-5" />
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Creating Account...
+                </>
+              ) : (
+                <>
+                  Create Account <ArrowRight className="ml-2 w-5 h-5" />
+                </>
+              )}
             </Button>
           </form>
 
@@ -241,10 +231,7 @@ const SignUpForm = () => {
           <div className="text-center mt-8">
             <p className="text-gray-600">
               Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-indigo-600 hover:text-indigo-700 font-semibold"
-              >
+              <Link to="/login" className="text-indigo-600 hover:text-indigo-700 font-semibold">
                 Sign in
               </Link>
             </p>

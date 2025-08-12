@@ -1,32 +1,52 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import toast from "react-hot-toast";
+import { loginUser, googleAuthUser } from "../../api/auth/authApi";
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt:', formData);
-    navigate('/profile'); // Simulated login success
+    setLoading(true);
+    try {
+      await loginUser(formData.email, formData.password);
+      toast.success("Logged in successfully!");
+
+      // Delay navigation for 1.5s to let toast & loader show
+      setTimeout(() => {
+        navigate("/profile");
+      }, 1500);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Login failed");
+      setLoading(false);
+    }
   };
 
-  // Handle input value changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Simulate Google login
-  const handleGoogleLogin = () => {
-    console.log('Google login clicked');
-    navigate('/profile');
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      await googleAuthUser("mock-google-token");
+      toast.success("Logged in with Google!");
+      setTimeout(() => {
+        navigate("/profile");
+      }, 1500);
+    } catch (error: any) {
+      toast.error("Google login failed");
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,16 +62,23 @@ const LoginForm = () => {
           {/* Google Sign-In button */}
           <Button
             onClick={handleGoogleLogin}
+            disabled={loading}
             variant="outline"
-            className="w-full h-14 text-gray-700 border-2 border-gray-200 hover:bg-gray-50 rounded-2xl mb-6 font-medium"
+            className="w-full h-14 text-gray-700 border-2 border-gray-200 hover:bg-gray-50 rounded-2xl mb-6 font-medium flex items-center justify-center"
           >
-            <div className="flex items-center justify-center space-x-3">
-              {/* Google logo SVG */}
-              <svg className="w-6 h-6" viewBox="0 0 24 24">
-                {/* ...paths omitted for brevity... */}
-              </svg>
-              <span className="text-lg">Continue with Google</span>
-            </div>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              <div className="flex items-center justify-center space-x-3">
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
+                  {/* Google logo */}
+                </svg>
+                <span className="text-lg">Continue with Google</span>
+              </div>
+            )}
           </Button>
 
           {/* Divider */}
@@ -60,7 +87,9 @@ const LoginForm = () => {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">or continue with email</span>
+              <span className="px-4 bg-white text-gray-500 font-medium">
+                or continue with email
+              </span>
             </div>
           </div>
 
@@ -68,7 +97,9 @@ const LoginForm = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email field */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Email</Label>
+              <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                Email
+              </Label>
               <Input
                 id="email"
                 name="email"
@@ -81,14 +112,16 @@ const LoginForm = () => {
               />
             </div>
 
-            {/* Password field with visibility toggle */}
+            {/* Password field */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</Label>
+              <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
+                Password
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
                   name="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleInputChange}
@@ -105,13 +138,18 @@ const LoginForm = () => {
               </div>
             </div>
 
-            {/* Remember me & Forgot password options */}
+            {/* Remember me & forgot password */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <input type="checkbox" id="remember" className="rounded-md" />
-                <Label htmlFor="remember" className="text-sm text-gray-600">Remember me</Label>
+                <Label htmlFor="remember" className="text-sm text-gray-600">
+                  Remember me
+                </Label>
               </div>
-              <Link to="/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+              >
                 Forgot password?
               </Link>
             </div>
@@ -119,17 +157,27 @@ const LoginForm = () => {
             {/* Submit button */}
             <Button
               type="submit"
-              className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl text-lg font-semibold shadow-lg"
+              disabled={loading}
+              className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl text-lg font-semibold shadow-lg flex items-center justify-center"
             >
-              Sign In
-              <ArrowRight className="ml-2 w-5 h-5" />
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </>
+              )}
             </Button>
           </form>
 
           {/* Signup link */}
           <div className="text-center mt-8">
             <p className="text-gray-600">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <Link to="/signup" className="text-indigo-600 hover:text-indigo-700 font-semibold">
                 Sign up
               </Link>
