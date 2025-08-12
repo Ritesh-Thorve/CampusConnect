@@ -19,7 +19,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Security & Logging
-app.use(cors());
+import cors from "cors";
+
+app.use(cors({
+  origin: "http://localhost:8080", 
+  credentials: true
+}));
+
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
