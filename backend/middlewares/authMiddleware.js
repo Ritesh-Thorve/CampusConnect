@@ -2,10 +2,19 @@ import jwt from "jsonwebtoken";
 
 export const authMiddleware = (req, res, next) => {
   try {
-    const token = req.headers.authorization;
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is missing");
+      return res.status(500).json({ error: "Server configuration error" });
+    }
 
+    let token = req.headers.authorization;
     if (!token) {
       return res.status(401).json({ error: "Authorization token missing" });
+    }
+
+    // Support "Bearer token" format
+    if (token.startsWith("Bearer ")) {
+      token = token.split(" ")[1];
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -14,13 +23,16 @@ export const authMiddleware = (req, res, next) => {
       return res.status(401).json({ error: "Invalid token payload" });
     }
 
-    // Attach userId to request
-    req.user = { userId: decoded.userId };
-
+    req.user = decoded; // keep full payload for downstream use
     next();
-    
   } catch (err) {
     console.error("Auth middleware error:", err.message);
-    return res.status(401).json({ error: "Invalid or expired token" });
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Token expired" });
+    }
+    if (err.name === "JsonWebTokenError") {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    return res.status(500).json({ error: "Authentication error" });
   }
 };

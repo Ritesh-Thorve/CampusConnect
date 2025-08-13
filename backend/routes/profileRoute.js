@@ -5,8 +5,8 @@ import { profileUpload, handleMulterError } from '../middlewares/uploadMiddlewar
 
 const router = express.Router();
 
-router.post('/update', authMiddleware, profileUpload, handleMulterError, createOrUpdateProfile);
-router.get('/me', authMiddleware, getMyProfile);
+router.get('/', authMiddleware, getMyProfile )
+router.post('/', authMiddleware, profileUpload, handleMulterError, createOrUpdateProfile);
 
 export default router;
     

@@ -1,15 +1,18 @@
 import prisma from "../config/db.js";
 import { uploadFile } from "../utils/upload.js";
 import Joi from "joi";
-import { validate } from "../utils/validator.js";
 
-// Joi Schema 
+// Joi Schema (improved graduation year validation)
 const profileSchema = Joi.object({
   fullName: Joi.string().required(),
   collegeName: Joi.string().required(),
   collegeAddress: Joi.string().required(),
   fieldOfStudy: Joi.string().required(),
-  graduationYear: Joi.number().integer().min(4).required(),
+  graduationYear: Joi.number()
+    .integer()
+    .min(1900)
+    .max(new Date().getFullYear() + 10)
+    .required(),
   bio: Joi.string().optional(),
   linkedIn: Joi.string().uri().optional(),
   twitter: Joi.string().uri().optional(),
@@ -20,63 +23,64 @@ const profileSchema = Joi.object({
 // Create or Update Profile
 export const createOrUpdateProfile = async (req, res) => {
   try {
-    const userId = req.user?.userId;
-    if (!userId) {
+    const userId = Number(req.user?.userId);
+    if (!userId || Number.isNaN(userId)) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
     if (req.body.graduationYear) {
-      req.body.graduationYear = parseInt(req.body.graduationYear, 10);
+      req.body.graduationYear = Number(req.body.graduationYear);
     }
 
-    // Validate request body (allow Joi to handle types)
-    validate(profileSchema, req.body);
+    // Validate request body
+    const { error } = profileSchema.validate(req.body, { abortEarly: false });
+    if (error) {
+      return res.status(400).json({
+        error: error.details.map((d) => d.message).join(", "),
+      });
+    }
 
     const uploadedFiles = {};
-    const fileUploads = [];
+    const uploadTasks = [
+      req.files?.profileImg?.[0] &&
+        uploadFile("profile-images", req.files.profileImg[0]).then(
+          (url) => (uploadedFiles.profileImg = url)
+        ),
+      req.files?.collegeImage?.[0] &&
+        uploadFile("college-images", req.files.collegeImage[0]).then(
+          (url) => (uploadedFiles.collegeImage = url)
+        ),
+      req.files?.collegeIdCard?.[0] &&
+        uploadFile("college-id-cards", req.files.collegeIdCard[0]).then(
+          (url) => (uploadedFiles.collegeIdCard = url)
+        ),
+    ].filter(Boolean);
 
-    // Profile Image Upload
-    if (req.files?.profileImg?.[0]) {
-      fileUploads.push(
-        uploadFile("profile-images", req.files.profileImg[0])
-          .then(url => (uploadedFiles.profileImg = url))
-      );
-    }
+    // handle failed uploads gracefully
+    await Promise.all(
+      uploadTasks.map((task) =>
+        task.catch((err) => {
+          console.error("File upload failed:", err);
+        })
+      )
+    );
 
-    // College Image Upload
-    if (req.files?.collegeImage?.[0]) {
-      fileUploads.push(
-        uploadFile("college-images", req.files.collegeImage[0])
-          .then(url => (uploadedFiles.collegeImage = url))
-      );
-    }
+    // sanitize data to avoid overwriting with undefined
+    const sanitizedData = Object.fromEntries(
+      Object.entries({ ...req.body, ...uploadedFiles }).filter(
+        ([, v]) => v !== undefined
+      )
+    );
 
-    // College ID Card Upload
-    if (req.files?.collegeIdCard?.[0]) {
-      fileUploads.push(
-        uploadFile("college-id-cards", req.files.collegeIdCard[0])
-          .then(url => (uploadedFiles.collegeIdCard = url))
-      );
-    }
-
-    // Wait for all uploads to complete
-    await Promise.all(fileUploads);
-
-    // Save profile in DB (create if not exists, else update)
     const profile = await prisma.profile.upsert({
       where: { userId },
-      update: { ...req.body, ...uploadedFiles },
-      create: { userId, ...req.body, ...uploadedFiles },
+      update: sanitizedData,
+      create: { userId, ...sanitizedData },
     });
 
     res.json({ message: "Profile saved successfully", profile });
   } catch (err) {
     console.error("Error saving profile:", err);
-
-    if (err.isJoi) {
-      return res.status(400).json({ error: err.message });
-    }
-
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -84,13 +88,11 @@ export const createOrUpdateProfile = async (req, res) => {
 // Get My Profile
 export const getMyProfile = async (req, res) => {
   try {
-    // Ensure userId exists and is an integer
-    const userId = parseInt(req.user?.userId, 10);
-    if (!userId) {
+    const userId = Number(req.user?.userId);
+    if (!userId || Number.isNaN(userId)) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Use findFirst for safety (works whether userId is unique or not)
     const profile = await prisma.profile.findFirst({
       where: { userId },
       include: {
@@ -109,24 +111,21 @@ export const getMyProfile = async (req, res) => {
   }
 };
 
-// Get All Profiles
+// Get All Profiles with pagination + filtering
 export const getAllProfiles = async (req, res) => {
   try {
-    // Parse pagination params safely
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
 
-    // Extract filters
     const { collegeName, graduationYear } = req.query;
 
-    // Build where clause dynamically
-    const where = {
-      ...(collegeName && { collegeName }),
-      ...(graduationYear && { graduationYear: parseInt(graduationYear, 10) }),
-    };
+    const where = {};
+    if (collegeName) where.collegeName = collegeName;
+    if (!isNaN(parseInt(graduationYear, 10))) {
+      where.graduationYear = parseInt(graduationYear, 10);
+    }
 
-    // Fetch paginated results and total count in parallel
     const [profiles, total] = await Promise.all([
       prisma.profile.findMany({
         where,
@@ -140,7 +139,7 @@ export const getAllProfiles = async (req, res) => {
       prisma.profile.count({ where }),
     ]);
 
-    return res.json({
+    res.json({
       total,
       page,
       totalPages: Math.ceil(total / limit),
@@ -148,8 +147,6 @@ export const getAllProfiles = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getAllProfiles:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-  
