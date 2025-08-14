@@ -67,3 +67,30 @@ export async function saveProfile(payload: ProfileData): Promise<ProfileData> {
 
   return mapServerProfileToProfileData(data.profile || data);
 }
+
+// GET all profiles with pagination and optional filtering
+export async function getAllProfiles(
+  page: number = 1,
+  limit: number = 10,
+  collegeName?: string,
+  graduationYear?: number
+): Promise<{
+  total: number;
+  page: number;
+  totalPages: number;
+  profiles: ProfileData[];
+}> {
+  const params: any = { page, limit };
+  if (collegeName) params.collegeName = collegeName;
+  if (graduationYear) params.graduationYear = graduationYear;
+
+  const res = await axiosInstance.get("/students/profiles", { params });
+
+  return {
+    total: res.data.total,
+    page: res.data.page,
+    totalPages: res.data.totalPages,
+    profiles: res.data.profiles.map(mapServerProfileToProfileData),
+  };
+}
+

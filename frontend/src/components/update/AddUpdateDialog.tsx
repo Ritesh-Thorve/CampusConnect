@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,96 +17,131 @@ import {
   SelectContent,
   SelectItem
 } from '@/components/ui/select';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../redux/store/store';
+import { createUpdate, clearError } from '../../redux/features/updates/updatesSlice';
 
-interface Props {
-  open: boolean; 
-  onOpenChange: (open: boolean) => void; // Callback to handle dialog open state change
-  formData: any; // Object holding form field values
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void; 
-  onTypeChange: (value: string) => void; 
-  onSubmit: (e: React.FormEvent) => void; // Form submission handler
+interface AddUpdateDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export const AddUpdateDialog = ({
-  open,
-  onOpenChange,
-  formData,
-  onChange,
-  onTypeChange,
-  onSubmit
-}: Props) => (
-  
-  // Dialog wrapper controlled by `open` prop
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    {/* Dialog content panel with max width styling */}
-    <DialogContent className="sm:max-w-[625px]">
-      
-      {/* Dialog header with title and description */}
-      <DialogHeader>
-        <DialogTitle>Add New Update</DialogTitle>
-        <DialogDescription>
-          Share the latest opportunities with the campus community
-        </DialogDescription>
-      </DialogHeader>
+export const AddUpdateDialog = ({ open, onOpenChange }: AddUpdateDialogProps) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error } = useSelector((state: RootState) => state.updates);
 
-      {/* Form for adding update with spacing */}
-      <form onSubmit={onSubmit} className="grid gap-4 py-4">
-        
-        {/* Title input field */}
-        <div>
-          <Label>Title</Label>
-          <Input
-            name="title"
-            value={formData.title}
-            onChange={onChange}
-            required
-          />
-        </div>
+  // Local form state
+  const [formData, setFormData] = useState({
+    title: '',
+    type: '',
+    details: '',
+    link: ''
+  });
 
-        {/* Type select dropdown */}
-        <div>
-          <Label>Type</Label>
-          <Select onValueChange={onTypeChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent>
-              {/* Options for type selection */}
-              <SelectItem value="hackathon">Hackathon</SelectItem>
-              <SelectItem value="news">News</SelectItem>
-              <SelectItem value="internship">Internship</SelectItem>
-              <SelectItem value="job">Job</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+  // Handle input changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-        {/* Full details textarea, required */}
-        <div>
-          <Label>Full Details</Label>
-          <Textarea
-            name="detail"
-            value={formData.detail}
-            onChange={onChange}
-            required
-          />
-        </div>
+  // Handle type select change
+  const handleTypeChange = (value: string) => {
+    setFormData({ ...formData, type: value });
+  };
 
-        {/* Link input field, required */}
-        <div>
-          <Label>Link</Label>
-          <Input
-            name="link"
-            value={formData.link}
-            onChange={onChange}
-            required
-          />
-        </div>
+  // Handle form submit
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title || !formData.type || !formData.details) return;
 
-        {/* Submit button */}
-        <Button type="submit" className="w-full bg-indigo-600 text-white hover:bg-indigo-700">
-          Submit
-        </Button>
-      </form>
-    </DialogContent>
-  </Dialog>
-);
+    try {
+      await dispatch(
+        createUpdate({
+          title: formData.title,
+          type: formData.type,
+          details: formData.details,
+          link: formData.link
+        })
+      ).unwrap();
+
+      // Reset form and close dialog
+      setFormData({ title: '', type: '', details: '', link: '' });
+      onOpenChange(false);
+    } catch {
+      // Error is handled by Redux slice, optionally can show toast here
+    }
+  };
+
+  // Clear error when dialog opens/closes
+  useEffect(() => {
+    dispatch(clearError());
+  }, [open, dispatch]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[625px]">
+        <DialogHeader>
+          <DialogTitle>Add New Update</DialogTitle>
+          <DialogDescription>
+            Share the latest opportunities with the campus community
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+          <div>
+            <Label>Title</Label>
+            <Input
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <Label>Type</Label>
+            <Select onValueChange={handleTypeChange} value={formData.type}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="hackathon">Hackathon</SelectItem>
+                <SelectItem value="news">News</SelectItem>
+                <SelectItem value="internship">Internship</SelectItem>
+                <SelectItem value="job">Job</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>Full detailss</Label>
+            <Textarea
+              name="details"
+              value={formData.details}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <Label>Link</Label>
+            <Input
+              name="link"
+              value={formData.link}
+              onChange={handleChange}
+            />
+          </div>
+
+          {error && <p className="text-red-500">{error}</p>}
+
+          <Button
+            type="submit"
+            className="w-full bg-indigo-600 text-white hover:bg-indigo-700"
+            disabled={loading}
+          >
+            {loading ? 'Submitting...' : 'Submit'}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};

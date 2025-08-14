@@ -1,94 +1,55 @@
 import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { fetchAllProfiles } from '../redux/features/profile/studentsProfilesSlice';
+import { useAppDispatch } from '@/redux/store/hooks';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import StudentCard from '@/components/college/StudentCard';
 import EmptyState from '@/components/college/EmptyState';
 import PaymentPrompt from '@/components/PaymentPrompt';
-import { StudentProfile } from '@/types/student';
+import type { RootState } from '@/redux/store/store';
+import type { StudentProfile } from '@/types/student';
 
 const College = () => {
-  const [students, setStudents] = useState<StudentProfile[]>([]);
+  const dispatch = useAppDispatch();
+  const { data, loading, error } = useSelector(
+    (state: RootState) => state.allStudentsProfiles
+  );
+
   const [showPaymentPrompt, setShowPaymentPrompt] = useState(true);
+  const [page, setPage] = useState(1);
+  const limit = 6;
 
   useEffect(() => {
-    // Load user profile from localStorage if exists
-    const userProfile = localStorage.getItem('userProfile');
-    if (userProfile) {
-      const profile = JSON.parse(userProfile) as StudentProfile;
-      setStudents([profile]);
-    }
+    dispatch(fetchAllProfiles({ page, limit }));
+  }, [dispatch, page]);
 
-    // Mock student data
-    const mockStudents: StudentProfile[] = [
-      {
-        name: 'Alice Johnson',
-        email: 'alice.johnson@mit.edu',
-        collegeName: 'MIT',
-        collegeAddress: 'Cambridge, MA, United States',
-        profileImage: '',
-        collegeImage: '',
-        linkedinUrl: 'https://linkedin.com/in/alicejohnson',
-        twitterUrl: 'https://twitter.com/alicejohnson',
-        githubUrl: 'https://github.com/alicejohnson',
-        collegeIdCard: '',
-        bio: 'Computer Science student passionate about AI and machine learning. Love working on open source projects and contributing to the tech community.',
-        major: 'Computer Science',
-        graduationYear: '2024'
-      },
-      {
-        name: 'Bob Smith',
-        email: 'bob.smith@stanford.edu',
-        collegeName: 'Stanford University',
-        collegeAddress: 'Stanford, CA, United States',
-        profileImage: '',
-        collegeImage: '',
-        linkedinUrl: 'https://linkedin.com/in/bobsmith',
-        twitterUrl: 'https://twitter.com/bobsmith',
-        githubUrl: 'https://github.com/bobsmith',
-        collegeIdCard: '',
-        bio: 'Engineering student with interest in robotics and automation. Part-time researcher at the robotics lab working on autonomous systems.',
-        major: 'Mechanical Engineering',
-        graduationYear: '2025'
-      },
-      {
-        name: 'Carol Davis',
-        email: 'carol.davis@harvard.edu',
-        collegeName: 'Harvard University',
-        collegeAddress: 'Cambridge, MA, United States',
-        profileImage: '',
-        collegeImage: '',
-        linkedinUrl: 'https://linkedin.com/in/caroldavis',
-        twitterUrl: 'https://twitter.com/caroldavis',
-        githubUrl: 'https://github.com/caroldavis',
-        collegeIdCard: '',
-        bio: 'Business major with focus on entrepreneurship. Currently working on my startup idea in fintech and sustainable technology solutions.',
-        major: 'Business Administration',
-        graduationYear: '2024'
-      }
-    ];
-
-    setStudents(prev => {
-      const existingNames = prev.map(p => p.name);
-      const newStudents = mockStudents.filter(s => !existingNames.includes(s.name));
-      return [...prev, ...newStudents];
-    });
-  }, []);
+  // Map API ProfileData to StudentProfile
+  const students: StudentProfile[] = (data?.profiles || []).map((s) => ({
+    name: s.fullName || "",
+    fullName: s.fullName || "",
+    email: s.email || "",
+    collegeName: s.collegeName || "",
+    collegeAddress: s.collegeAddress || "",
+    fieldOfStudy: s.fieldOfStudy || "",
+    graduationYear: s.graduationYear?.toString() || "",
+    bio: s.bio || "",
+    linkedinUrl: s.linkedIn || "",
+    twitterUrl: s.twitter || "",
+    githubUrl: s.github || "",
+    profileImage: s.profileImage || "",
+    collegeImage: s.collegeImage || "",
+    collegeIdCard: s.collegeIdCard || "",
+    major: s.fieldOfStudy || "", // or s.major if available
+  }));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
-      {/* Desktop Navbar */}
-      <div className="hidden md:block">
-        <Navbar />
-      </div>
-
-      {/* Mobile Header */}
+      {/* Navbar */}
+      <div className="hidden md:block"><Navbar /></div>
       <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 py-3 px-4">
         <div className="flex items-center justify-center">
-          <img
-            src="/compus-connect_logo.png"
-            alt="Campus Connect"
-            className="h-6 w-6 mr-2 object-cover"
-          />
+          <img src="/compus-connect_logo.png" alt="Campus Connect" className="h-6 w-6 mr-2 object-cover" />
           <span className="text-sm font-semibold text-gray-800">Campus Connect</span>
         </div>
       </div>
@@ -106,30 +67,48 @@ const College = () => {
             </p>
           </div>
 
+          {loading && <p className="text-center text-gray-500">Loading students...</p>}
+          {error && <p className="text-center text-red-500">{error}</p>}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
             {students.map((student, index) => (
               <StudentCard key={`${student.name}-${index}`} student={student} />
             ))}
           </div>
 
-          {students.length === 0 && <EmptyState />}
+          {students.length === 0 && !loading && <EmptyState />}
+
+          {/* Pagination */}
+          {data?.totalPages && data.totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-6">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+                className="px-4 py-2 bg-indigo-500 text-white rounded disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <span>
+                Page {page} of {data.totalPages}
+              </span>
+              <button
+                disabled={page >= data.totalPages}
+                onClick={() => setPage(page + 1)}
+                className="px-4 py-2 bg-indigo-500 text-white rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </main>
 
-      {/* Footer - hidden on mobile */}
-      <div className="hidden md:block">
-        <Footer />
-      </div>
+      {/* Footer */}
+      <div className="hidden md:block"><Footer /></div>
+      <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
 
-      {/* Mobile bottom navigation */}
-      <div className="md:hidden fixed bottom-0 w-full z-50">
-        <Navbar />
-      </div>
-
-      {/* Payment Modal */}
-      {showPaymentPrompt && (
-        <PaymentPrompt onClose={() => setShowPaymentPrompt(false)} />
-      )}
+      {/* Payment Prompt */}
+      {showPaymentPrompt && <PaymentPrompt onClose={() => setShowPaymentPrompt(false)} />}
     </div>
   );
 };
