@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 
 import { rateLimitMiddleware } from './middlewares/rateLimitMiddleware.js';
 import { errorHandlerMiddleware } from './middlewares/errorHandlerMiddleware.js';
+import './jobs/autoDeleteOldRecords.js';
 
 import authRoutes from './routes/authRoutes.js';
 import profileRoute from './routes/profileRoute.js';
