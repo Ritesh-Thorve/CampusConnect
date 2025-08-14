@@ -79,18 +79,6 @@ export const AddUpdateDialog = ({
           </Select>
         </div>
 
-        {/* Short description textarea for preview */}
-        <div>
-          <Label>Short Description (for preview)</Label>
-          <Textarea
-            name="description"
-            value={formData.description}
-            onChange={onChange}
-            placeholder="Brief description shown on the card..."
-            rows={2}
-          />
-        </div>
-
         {/* Full details textarea, required */}
         <div>
           <Label>Full Details</Label>

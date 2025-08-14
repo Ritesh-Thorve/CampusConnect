@@ -55,23 +55,3 @@ export const getAllUpdates = async (req, res, next) => {
   }
 };
 
-// Get updates created by the logged-in user
-export const getUserUpdates = async (req, res, next) => {
-  try {
-    const userId = req.user.userId;
-
-    const updates = await prisma.update.findMany({
-      where: { userId },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
-
-    res.json({
-      count: updates.length,
-      updates
-    });
-  } catch (err) {
-    next(err);
-  }
-};

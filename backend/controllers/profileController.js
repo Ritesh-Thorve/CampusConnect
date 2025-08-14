@@ -40,7 +40,7 @@ export const createOrUpdateProfile = async (req, res) => {
       github: req.body.github || null,
     };
 
-    // Handle file uploads (if using multer)
+    // Handling file uploads using multer
     if (req.files?.profileImg?.[0]) {
       data.profileImg = `/uploads/${req.files.profileImg[0].filename}`;
     }
