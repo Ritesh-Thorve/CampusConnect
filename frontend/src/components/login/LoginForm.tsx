@@ -7,26 +7,28 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import toast from "react-hot-toast";
 import { loginUser, googleAuthUser } from "../../api/auth/authApi";
+import { useAppDispatch } from "@/redux/store/hooks";
+import { setCredentials } from "@/redux/features/auth/authSlice";
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
+  // After successful login/signup
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await loginUser(formData.email, formData.password);
+      const res = await loginUser(formData.email, formData.password);
+      dispatch(setCredentials(res)); // ✅ Persist immediately
       toast.success("Logged in successfully!");
-
-      // Delay navigation for 1.5s to let toast & loader show
-      setTimeout(() => {
-        navigate("/profile");
-      }, 1500);
+      navigate("/profile"); // ✅ Go directly
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Login failed");
+      toast.error(error?.message || "Login failed");
+    } finally {
       setLoading(false);
     }
   };
@@ -38,13 +40,13 @@ const LoginForm = () => {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      await googleAuthUser("mock-google-token");
+      const res = await googleAuthUser("mock-google-token"); // Replace with real
+      dispatch(setCredentials(res)); // ✅ Persist immediately
       toast.success("Logged in with Google!");
-      setTimeout(() => {
-        navigate("/profile");
-      }, 1500);
+      navigate("/profile");
     } catch (error: any) {
-      toast.error("Google login failed");
+      toast.error(error?.message || "Google login failed");
+    } finally {
       setLoading(false);
     }
   };
@@ -53,8 +55,12 @@ const LoginForm = () => {
     <div className="w-full max-w-lg">
       {/* Header */}
       <div className="text-center mb-10">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Welcome back</h1>
-        <p className="text-gray-600 text-lg">Sign in to continue your journey</p>
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          Welcome back
+        </h1>
+        <p className="text-gray-600 text-lg">
+          Sign in to continue your journey
+        </p>
       </div>
 
       <Card className="backdrop-blur-sm bg-white/90 shadow-2xl border-0 rounded-3xl">
@@ -73,9 +79,7 @@ const LoginForm = () => {
               </>
             ) : (
               <div className="flex items-center justify-center space-x-3">
-                <svg className="w-6 h-6" viewBox="0 0 24 24">
-                  {/* Google logo */}
-                </svg>
+                <svg className="w-6 h-6" viewBox="0 0 24 24">{/* Google SVG */}</svg>
                 <span className="text-lg">Continue with Google</span>
               </div>
             )}
