@@ -5,63 +5,67 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle } from 'lucide-react';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '@/redux/store/store';
+import { addTrend } from '@/redux/features/trends/trendsSlice';
 
-interface CreateBlogDialogProps {
-  newBlog: { title: string; content: string; tags: string };
-  setNewBlog: (value: { title: string; content: string; tags: string }) => void;
-  handleSubmitBlog: () => void;
-}
+const CreateBlogDialog = () => {
+  const dispatch = useDispatch<AppDispatch>();
 
-const CreateBlogDialog = ({ newBlog, setNewBlog, handleSubmitBlog }: CreateBlogDialogProps) => {
+  const [newTrend, setNewTrend] = useState({
+    title: '',
+    description: '',
+    tag: '',
+  });
+
+  const handleSubmitTrend = () => {
+    if (!newTrend.title || !newTrend.description || !newTrend.tag) {
+      alert('Please fill all fields');
+      return;
+    }
+
+    dispatch(addTrend(newTrend));
+    setNewTrend({ title: '', description: '', tag: '' });
+  };
+
   return (
-    // Dialog wrapper component for modal functionality
     <Dialog>
-      {/* Button that triggers the dialog to open */}
       <DialogTrigger asChild>
         <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 h-10 px-4 rounded-lg shadow">
           <PlusCircle className="w-4 h-4 mr-2" />
-          <span className="sr-only sm:not-sr-only">Write Blog</span>
+          <span className="sr-only sm:not-sr-only">Create Trend</span>
         </Button>
       </DialogTrigger>
-      
-      {/* Dialog content: the modal window */}
+
       <DialogContent className="max-w-[95vw] rounded-lg sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-base sm:text-lg">Write a New Blog Post</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">Create a New Trend</DialogTitle>
         </DialogHeader>
 
-        {/* Form inputs for blog details */}
         <div className="space-y-3">
-          {/* Input for the blog title */}
           <Input
-            placeholder="Blog title..."
-            value={newBlog.title}
-            onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })}
+            placeholder="Trend title..."
+            value={newTrend.title}
+            onChange={(e) => setNewTrend({ ...newTrend, title: e.target.value })}
           />
-
-          {/* Textarea for the blog content */}
           <Textarea
-            placeholder="Share your thoughts..."
-            value={newBlog.content}
-            onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
+            placeholder="Trend description..."
+            value={newTrend.description}
+            onChange={(e) => setNewTrend({ ...newTrend, description: e.target.value })}
             className="min-h-[120px]"
           />
-
-          {/* Input for the blog tags as comma separated string */}
           <Input
-            placeholder="Tags (comma separated)"
-            value={newBlog.tags}
-            onChange={(e) => setNewBlog({ ...newBlog, tags: e.target.value })}
+            placeholder="Tag"
+            value={newTrend.tag}
+            onChange={(e) => setNewTrend({ ...newTrend, tag: e.target.value })}
           />
 
-          {/* Actions: Cancel and Publish buttons */}
           <div className="flex justify-end gap-2">
-            {/* Cancel button resets the form fields */}
-            <Button variant="outline" onClick={() => setNewBlog({ title: '', content: '', tags: '' })}>
+            <Button variant="outline" onClick={() => setNewTrend({ title: '', description: '', tag: '' })}>
               Cancel
             </Button>
-            {/* Publish button triggers submission handler */}
-            <Button onClick={handleSubmitBlog} className="bg-gradient-to-r from-indigo-600 to-purple-600">
+            <Button onClick={handleSubmitTrend} className="bg-gradient-to-r from-indigo-600 to-purple-600">
               Publish
             </Button>
           </div>

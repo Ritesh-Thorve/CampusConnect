@@ -1,35 +1,42 @@
-'use client';
-
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import BlogCard from './BlogCard';
 import EmptyState from './EmptyState';
+import { getTrends } from '@/redux/features/trends/trendsSlice';
+import type { RootState, AppDispatch } from '@/redux/store/store';
 
-interface Blog {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  date: string;
-  tags: string[];
+interface TrendsListProps {
+  searchTerm?: string;
+  clearSearch?: () => void;
 }
 
-interface BlogListProps {
-  blogs: Blog[];
-  searchTerm: string;
-  clearSearch: () => void;
-}
+const TrendsList = ({ searchTerm = '', clearSearch = () => {} }: TrendsListProps) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { trends, loading, error } = useSelector((state: RootState) => state.trends);
 
-const BlogList = ({ blogs, searchTerm, clearSearch }: BlogListProps) => {
-  if (blogs.length === 0) {
-    return <EmptyState searchTerm={searchTerm} clearSearch={clearSearch} />;
-  }
+  useEffect(() => {
+    dispatch(getTrends());
+  }, [dispatch]);
+
+  if (loading) return <p>Loading trends...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (!trends.length) return <EmptyState searchTerm={searchTerm} clearSearch={clearSearch} />;
 
   return (
     <section className="space-y-6">
-      {blogs.map((blog) => (
-        <BlogCard key={blog.id} blog={blog} />
+      {trends.map((trend) => (
+        <BlogCard
+          key={trend.id}
+          item={{
+            id: trend.id,
+            title: trend.title,
+            description: trend.description,
+            tags: trend.tag, // single tag
+          }}
+        />
       ))}
     </section>
   );
 };
 
-export default BlogList;
+export default TrendsList;
