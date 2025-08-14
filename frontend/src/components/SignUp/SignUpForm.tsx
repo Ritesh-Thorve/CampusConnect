@@ -54,7 +54,7 @@ const SignUpForm = () => {
         toast.success("Account created successfully!");
         setTimeout(() => {
           navigate("/profile");
-        }, 2000); // ⏳ Delay navigation for 2 seconds
+        }, 2000); // Delay navigation for 2 seconds
       })
       .catch((err) => {
         toast.error(err || "Failed to create account");

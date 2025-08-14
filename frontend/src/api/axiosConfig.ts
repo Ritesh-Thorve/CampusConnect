@@ -1,9 +1,7 @@
-// src/api/axiosConfig.ts
 import axios from "axios";
 import { store } from "../redux/store/store";
 import { logout } from "@/redux/features/auth/authSlice";
 
-// Create Axios instance
 export const axiosInstance = axios.create({
   baseURL: "http://localhost:3000/api",
   headers: {
@@ -11,7 +9,7 @@ export const axiosInstance = axios.create({
   },
 });
 
-// Request interceptor: attach token
+// Request interceptor: attached token
 axiosInstance.interceptors.request.use(
   (config) => {
     // Always try Redux first

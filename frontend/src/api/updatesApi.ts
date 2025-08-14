@@ -1,5 +1,4 @@
-// src/api/updatesApi.ts
-import axios from './axiosConfig'; // your pre-configured axios instance
+import axios from './axiosConfig';
 
 export interface Update {
   id: string;

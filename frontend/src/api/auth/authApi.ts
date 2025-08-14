@@ -1,4 +1,3 @@
-// src/api/auth/authApi.ts
 import { axiosInstance } from "../axiosConfig";
 import { SignUpData, AuthResponse } from "../../redux/features/auth/types";
 
