@@ -23,59 +23,38 @@ const profileSchema = Joi.object({
 // Create or Update Profile
 export const createOrUpdateProfile = async (req, res) => {
   try {
-    const userId = Number(req.user?.userId);
-    if (!userId || Number.isNaN(userId)) {
+    const userId = req.user?.userId;
+    if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    if (req.body.graduationYear) {
-      req.body.graduationYear = Number(req.body.graduationYear);
+    const data = {
+      fullName: req.body.fullName,
+      collegeName: req.body.collegeName,
+      collegeAddress: req.body.collegeAddress,
+      fieldOfStudy: req.body.fieldOfStudy,
+      graduationYear: parseInt(req.body.graduationYear) || null,
+      bio: req.body.bio || null,
+      linkedIn: req.body.linkedIn || null,
+      twitter: req.body.twitter || null,
+      github: req.body.github || null,
+    };
+
+    // Handle file uploads (if using multer)
+    if (req.files?.profileImg?.[0]) {
+      data.profileImg = `/uploads/${req.files.profileImg[0].filename}`;
     }
-
-    // Validate request body
-    const { error } = profileSchema.validate(req.body, { abortEarly: false });
-    if (error) {
-      return res.status(400).json({
-        error: error.details.map((d) => d.message).join(", "),
-      });
+    if (req.files?.collegeImage?.[0]) {
+      data.collegeImage = `/uploads/${req.files.collegeImage[0].filename}`;
     }
-
-    const uploadedFiles = {};
-    const uploadTasks = [
-      req.files?.profileImg?.[0] &&
-        uploadFile("profile-images", req.files.profileImg[0]).then(
-          (url) => (uploadedFiles.profileImg = url)
-        ),
-      req.files?.collegeImage?.[0] &&
-        uploadFile("college-images", req.files.collegeImage[0]).then(
-          (url) => (uploadedFiles.collegeImage = url)
-        ),
-      req.files?.collegeIdCard?.[0] &&
-        uploadFile("college-id-cards", req.files.collegeIdCard[0]).then(
-          (url) => (uploadedFiles.collegeIdCard = url)
-        ),
-    ].filter(Boolean);
-
-    // handle failed uploads gracefully
-    await Promise.all(
-      uploadTasks.map((task) =>
-        task.catch((err) => {
-          console.error("File upload failed:", err);
-        })
-      )
-    );
-
-    // sanitize data to avoid overwriting with undefined
-    const sanitizedData = Object.fromEntries(
-      Object.entries({ ...req.body, ...uploadedFiles }).filter(
-        ([, v]) => v !== undefined
-      )
-    );
+    if (req.files?.collegeIdCard?.[0]) {
+      data.collegeIdCard = `/uploads/${req.files.collegeIdCard[0].filename}`;
+    }
 
     const profile = await prisma.profile.upsert({
       where: { userId },
-      update: sanitizedData,
-      create: { userId, ...sanitizedData },
+      update: data,
+      create: { userId, ...data },
     });
 
     res.json({ message: "Profile saved successfully", profile });
@@ -88,8 +67,8 @@ export const createOrUpdateProfile = async (req, res) => {
 // Get My Profile
 export const getMyProfile = async (req, res) => {
   try {
-    const userId = Number(req.user?.userId);
-    if (!userId || Number.isNaN(userId)) {
+    const userId = req.user?.userId;
+    if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
@@ -110,6 +89,7 @@ export const getMyProfile = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 // Get All Profiles with pagination + filtering
 export const getAllProfiles = async (req, res) => {

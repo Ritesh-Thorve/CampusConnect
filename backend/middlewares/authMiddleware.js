@@ -23,7 +23,12 @@ export const authMiddleware = (req, res, next) => {
       return res.status(401).json({ error: "Invalid token payload" });
     }
 
-    req.user = decoded; // keep full payload for downstream use
+    // Always keep userId as string for Prisma (cuid/uuid support)
+    req.user = {
+      ...decoded,
+      userId: String(decoded.userId),
+    };
+
     next();
   } catch (err) {
     console.error("Auth middleware error:", err.message);
