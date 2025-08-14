@@ -12,9 +12,9 @@ export interface User {
 }
 
 export interface AuthResponse {
-  message: string;
   token: string;
   user: User;
+  message?: string;
 }
 
 export interface AuthState {
