@@ -5,10 +5,25 @@ import EmptyState from './EmptyState';
 import { getTrends } from '@/redux/features/trends/trendsSlice';
 import type { RootState, AppDispatch } from '@/redux/store/store';
 
+interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  date: string;
+  views: number;
+  likes: number;
+  comments: number;
+  tags: string[];
+}
+
+
 interface TrendsListProps {
+  blogs: BlogPost[];
   searchTerm?: string;
   clearSearch?: () => void;
 }
+
 
 const TrendsList = ({ searchTerm = '', clearSearch = () => {} }: TrendsListProps) => {
   const dispatch = useDispatch<AppDispatch>();

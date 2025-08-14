@@ -10,62 +10,57 @@ import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '@/redux/store/store';
 import { addTrend } from '@/redux/features/trends/trendsSlice';
 
-const CreateBlogDialog = () => {
-  const dispatch = useDispatch<AppDispatch>();
-
-  const [newTrend, setNewTrend] = useState({
-    title: '',
-    description: '',
-    tag: '',
-  });
-
-  const handleSubmitTrend = () => {
-    if (!newTrend.title || !newTrend.description || !newTrend.tag) {
-      alert('Please fill all fields');
-      return;
-    }
-
-    dispatch(addTrend(newTrend));
-    setNewTrend({ title: '', description: '', tag: '' });
+interface CreateBlogDialogProps {
+  newBlog: {
+    title: string;
+    content: string;
+    tags: string;
   };
+  setNewBlog: React.Dispatch<React.SetStateAction<{
+    title: string;
+    content: string;
+    tags: string;
+  }>>;
+  handleSubmitBlog: () => void;
+}
 
+
+const CreateBlogDialog: React.FC<CreateBlogDialogProps> = ({ newBlog, setNewBlog, handleSubmitBlog }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 h-10 px-4 rounded-lg shadow">
-          <PlusCircle className="w-4 h-4 mr-2" />
-          <span className="sr-only sm:not-sr-only">Create Trend</span>
+        <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 h-10 px-4 rounded-lg shadow">
+          Create Trend
         </Button>
       </DialogTrigger>
 
       <DialogContent className="max-w-[95vw] rounded-lg sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-base sm:text-lg">Create a New Trend</DialogTitle>
+          <DialogTitle>Create a New Trend</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3">
           <Input
             placeholder="Trend title..."
-            value={newTrend.title}
-            onChange={(e) => setNewTrend({ ...newTrend, title: e.target.value })}
+            value={newBlog.title}
+            onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })}
           />
           <Textarea
             placeholder="Trend description..."
-            value={newTrend.description}
-            onChange={(e) => setNewTrend({ ...newTrend, description: e.target.value })}
-            className="min-h-[120px]"
+            value={newBlog.content}
+            onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
           />
           <Input
             placeholder="Tag"
-            value={newTrend.tag}
-            onChange={(e) => setNewTrend({ ...newTrend, tag: e.target.value })}
+            value={newBlog.tags}
+            onChange={(e) => setNewBlog({ ...newBlog, tags: e.target.value })}
           />
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setNewTrend({ title: '', description: '', tag: '' })}>
+            <Button variant="outline" onClick={() => setNewBlog({ title: '', content: '', tags: '' })}>
               Cancel
             </Button>
-            <Button onClick={handleSubmitTrend} className="bg-gradient-to-r from-indigo-600 to-purple-600">
+            <Button onClick={handleSubmitBlog}>
               Publish
             </Button>
           </div>
@@ -76,3 +71,4 @@ const CreateBlogDialog = () => {
 };
 
 export default CreateBlogDialog;
+
