@@ -5,10 +5,10 @@ import FeaturedContent from '@/components/FeaturedContent';
 import Footer from '@/components/Footer';
 
 const Home = () => (
-  <div className="min-h-screen flex flex-col bg-white text-gray-900">
+  <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 via-white to-purple-50">
 
     {/* Desktop Navbar (hidden on mobile) */}
-    <div className="hidden md:block sticky top-0 z-20 bg-white border-b border-gray-200">
+    <div className="hidden md:block sticky top-0 z-20 from-indigo-50 via-white to-purple-50">
       <Navbar />
     </div>
 

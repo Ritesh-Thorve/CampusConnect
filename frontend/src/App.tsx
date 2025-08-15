@@ -1,4 +1,3 @@
-// src/App.tsx
 import { useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AppToaster from "../src/components/AppToaster";
@@ -16,6 +15,7 @@ import Updates from "./pages/Updates";
 import Trends from "./pages/Trends";
 import NotFound from "./pages/NotFound";
 import OAuthCallback from "./pages/OAuthCallback";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -35,7 +35,14 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/oauth-callback" element={<OAuthCallback />} />
             <Route path="/college" element={<College />} />
             <Route path="/updates" element={<Updates />} />

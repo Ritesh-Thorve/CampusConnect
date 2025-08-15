@@ -1,9 +1,44 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Bell, TrendingUp, User, LogIn } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Users, Bell, TrendingUp, User, LogIn, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
+import { supabaseClient } from '../config/supabaseClient';
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Get current session on mount
+    supabaseClient.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user || null);
+    });
+
+    // Listen for login/logout changes
+    const { data: listener } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await supabaseClient.auth.signOut();
+
+      // Clear Supabase tokens manually (optional but safe)
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('sb-refresh-token');
+
+      setUser(null); // update state immediately
+      navigate('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -20,7 +55,6 @@ const Navbar = () => {
         <nav className="bg-white/90 backdrop-blur-sm border rounded-full shadow-sm hover:shadow-md transition-all duration-300 max-w-7xl mx-auto">
           <div className="px-6">
             <div className="flex justify-between items-center h-16">
-
               {/* Logo */}
               <Link
                 to="/"
@@ -62,24 +96,38 @@ const Navbar = () => {
 
               {/* Auth Buttons */}
               <div className="flex items-center space-x-3 mr-1">
-                <Link to="/login">
+                {user ? (
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="rounded-full text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/40 px-5 flex items-center gap-1.5 border border-gray-200"
+                    onClick={handleLogout}
+                    className="rounded-full text-gray-600 hover:text-red-600 hover:bg-red-50/40 px-5 flex items-center gap-1.5 border border-gray-200"
                   >
-                    <LogIn className="w-4 h-4" />
-                    <span>Log In</span>
+                    <LogOut className="w-4 h-4" />
+                    <span>Log Out</span>
                   </Button>
-                </Link>
-                <Link to="/signup">
-                  <Button
-                    size="sm"
-                    className="rounded-full px-5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-sm hover:shadow-md transition-all"
-                  >
-                    Sign Up
-                  </Button>
-                </Link>
+                ) : (
+                  <>
+                    <Link to="/login">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/40 px-5 flex items-center gap-1.5 border border-gray-200"
+                      >
+                        <LogIn className="w-4 h-4" />
+                        <span>Log In</span>
+                      </Button>
+                    </Link>
+                    <Link to="/signup">
+                      <Button
+                        size="sm"
+                        className="rounded-full px-5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-sm hover:shadow-md transition-all"
+                      >
+                        Sign Up
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -107,6 +155,19 @@ const Navbar = () => {
               </Link>
             );
           })}
+
+          {/* Mobile Logout Button */}
+          {user && (
+            <button
+              onClick={handleLogout}
+              className="flex flex-col items-center p-1 w-full text-red-600 hover:text-red-700"
+            >
+              <div className="p-2 rounded-full bg-red-50">
+                <LogOut className="w-6 h-6" />
+              </div>
+              <span className="text-xs mt-1 font-medium">Log Out</span>
+            </button>
+          )}
         </nav>
       </div>
     </>

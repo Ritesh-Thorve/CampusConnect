@@ -54,11 +54,13 @@ const LoginForm = () => {
   return (
     <div className="w-full max-w-lg">
       {/* Header */}
-      <div className="text-center mb-10">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Welcome back
+      <div className="text-center mt-5 mb-10">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3">
+          Welcome
+          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent ml-3">back</span> 
         </h1>
-        <p className="text-gray-600 text-lg">
+        
+        <p className="text-gray-600 text-lg mb-6">
           Sign in to continue your journey
         </p>
       </div>
@@ -140,22 +142,6 @@ const LoginForm = () => {
                   {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
                 </button>
               </div>
-            </div>
-
-            {/* Remember me & forgot password */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <input type="checkbox" id="remember" className="rounded-md" />
-                <Label htmlFor="remember" className="text-sm text-gray-600">
-                  Remember me
-                </Label>
-              </div>
-              <Link
-                to="/forgot-password"
-                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-              >
-                Forgot password?
-              </Link>
             </div>
 
             {/* Submit button */}

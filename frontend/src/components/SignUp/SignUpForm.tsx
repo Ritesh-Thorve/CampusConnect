@@ -73,8 +73,8 @@ const SignUpForm = () => {
   return (
     <div className="w-full max-w-lg">
       <div className="text-center mb-10">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Join CampusConnect
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3">
+          Join <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">CampusConnect</span>
         </h1>
         <p className="text-gray-600 text-lg">
           Create your account and start connecting
@@ -87,9 +87,19 @@ const SignUpForm = () => {
           <Button
             onClick={handleGoogleSignUp}
             variant="outline"
-            className="w-full h-14 text-gray-700 border-2 border-gray-200 hover:bg-gray-50 rounded-2xl mb-6 font-medium"
+            className="w-full h-14 text-gray-700 border-2 border-gray-200 hover:bg-gray-50 rounded-2xl mb-6 font-medium flex items-center justify-center text-lg"
           >
-            Continue with Google
+           {loading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              <div className="flex items-center justify-center space-x-3">
+                <svg className="w-6 h-6" viewBox="0 0 24 24">{/* Google SVG */}</svg>
+                <span className="text-lg">Continue with Google</span>
+              </div>
+            )}
           </Button>
 
           {/* Divider */}
@@ -177,7 +187,7 @@ const SignUpForm = () => {
             </div>
 
             {/* Submit */}
-            <Button type="submit" disabled={loading} className="w-full h-14">
+            <Button type="submit" disabled={loading} className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl text-lg font-semibold shadow-lg flex items-center justify-center">
               {loading ? <Loader2 className="animate-spin mr-2" /> : "Create Account"}
             </Button>
           </form>
