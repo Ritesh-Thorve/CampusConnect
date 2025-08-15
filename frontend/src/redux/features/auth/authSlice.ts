@@ -1,4 +1,3 @@
-// src/redux/features/auth/authSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import type { AuthResponse, User } from "./types";
 import { signUpUser } from "@/api/auth/authApi";

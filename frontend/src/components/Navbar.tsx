@@ -3,42 +3,59 @@ import { Home, Users, Bell, TrendingUp, User, LogIn, LogOut } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { supabaseClient } from '../config/supabaseClient';
+import { useToast } from "@/components/ui/use-toast"; // ✅ Toast hook
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
 
-  useEffect(() => {
+  const handleLogout = async () => {
+    try {
+      await supabaseClient.auth.signOut();
+      window.location.reload(); 
+      localStorage.removeItem('cc_token');
+      localStorage.removeItem('cc_user');
+      localStorage.removeItem('cc_expiry');
+      localStorage.removeItem('sb-rqrildgkhqojltpjxhyq-auth-token');
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('sb-refresh-token');
+
+      setUser(null);
+
+      toast({
+        title: "Logged out successfully",
+        description: "You have been signed out of your account.",
+        duration: 3000,
+      });
+
+      navigate('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast({
+        title: "Logout failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+   useEffect(() => {
     // Get current session on mount
     supabaseClient.auth.getSession().then(({ data }) => {
       setUser(data.session?.user || null);
     });
 
     // Listen for login/logout changes
-    const { data: listener } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
     });
 
     return () => {
-      listener.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await supabaseClient.auth.signOut();
-
-      // Clear Supabase tokens manually (optional but safe)
-      localStorage.removeItem('sb-access-token');
-      localStorage.removeItem('sb-refresh-token');
-
-      setUser(null); // update state immediately
-      navigate('/login');
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -97,15 +114,30 @@ const Navbar = () => {
               {/* Auth Buttons */}
               <div className="flex items-center space-x-3 mr-1">
                 {user ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleLogout}
-                    className="rounded-full text-gray-600 hover:text-red-600 hover:bg-red-50/40 px-5 flex items-center gap-1.5 border border-gray-200"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Log Out</span>
-                  </Button>
+                  <>
+                    {/* ✅ Profile Button when logged in */}
+                    <Link to="/profile">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/40 px-5 flex items-center gap-1.5 border border-gray-200"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>Profile</span>
+                      </Button>
+                    </Link>
+
+                    {/* ✅ Logout Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleLogout}
+                      className="rounded-full text-gray-600 hover:text-red-600 hover:bg-red-50/40 px-5 flex items-center gap-1.5 border border-gray-200"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Log Out</span>
+                    </Button>
+                  </>
                 ) : (
                   <>
                     <Link to="/login">
@@ -156,17 +188,29 @@ const Navbar = () => {
             );
           })}
 
-          {/* Mobile Logout Button */}
+          {/* ✅ Mobile: Profile + Logout if logged in */}
           {user && (
-            <button
-              onClick={handleLogout}
-              className="flex flex-col items-center p-1 w-full text-red-600 hover:text-red-700"
-            >
-              <div className="p-2 rounded-full bg-red-50">
-                <LogOut className="w-6 h-6" />
-              </div>
-              <span className="text-xs mt-1 font-medium">Log Out</span>
-            </button>
+            <>
+              <Link
+                to="/profile"
+                className="flex flex-col items-center p-1 w-full text-indigo-600 hover:text-indigo-700"
+              >
+                <div className="p-2 rounded-full bg-indigo-50">
+                  <User className="w-6 h-6" />
+                </div>
+                <span className="text-xs mt-1 font-medium">Profile</span>
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                className="flex flex-col items-center p-1 w-full text-red-600 hover:text-red-700"
+              >
+                <div className="p-2 rounded-full bg-red-50">
+                  <LogOut className="w-6 h-6" />
+                </div>
+                <span className="text-xs mt-1 font-medium">Log Out</span>
+              </button>
+            </>
           )}
         </nav>
       </div>

@@ -30,7 +30,6 @@ const OAuthCallback = () => {
         });
 
         dispatch(setCredentials(res));
-        toast.success("Logged in with Google!");
         navigate("/profile");
       } catch (err: any) {
         toast.error(err.message || "Google OAuth failed");

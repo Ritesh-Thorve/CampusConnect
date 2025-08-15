@@ -1,7 +1,7 @@
 // src/pages/auth/SignUpForm.tsx
 import { useState, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowRight, User, Mail, Lock, Loader2 } from "lucide-react";
+import { Eye, EyeOff, User, Mail, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,8 @@ const SignUpForm = () => {
     password: "",
     confirmPassword: "",
   });
+
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +57,7 @@ const SignUpForm = () => {
 
   // Google sign-up
   const handleGoogleSignUp = async () => {
+    setGoogleLoading(true);
     try {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",
@@ -67,6 +70,8 @@ const SignUpForm = () => {
       toast.success("Redirecting to Google...");
     } catch (err: any) {
       toast.error(err.message || "Google sign-in failed");
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -74,11 +79,12 @@ const SignUpForm = () => {
     <div className="w-full max-w-lg">
       <div className="text-center mb-10">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3">
-          Join <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">CampusConnect</span>
+          Join{" "}
+          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            CampusConnect
+          </span>
         </h1>
-        <p className="text-gray-600 text-lg">
-          Create your account and start connecting
-        </p>
+        <p className="text-gray-600 text-lg">Create your account and start connecting</p>
       </div>
 
       <Card className="backdrop-blur-sm bg-white/90 shadow-2xl border-0 rounded-3xl">
@@ -86,10 +92,11 @@ const SignUpForm = () => {
           {/* Google Button */}
           <Button
             onClick={handleGoogleSignUp}
+            disabled={googleLoading}
             variant="outline"
             className="w-full h-14 text-gray-700 border-2 border-gray-200 hover:bg-gray-50 rounded-2xl mb-6 font-medium flex items-center justify-center text-lg"
           >
-           {loading ? (
+            {googleLoading ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Signing in...
@@ -160,7 +167,11 @@ const SignUpForm = () => {
                   onChange={handleInputChange}
                   required
                 />
-                <button type="button" onClick={togglePasswordVisibility} className="absolute right-4 top-1/2 -translate-y-1/2">
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                >
                   {showPassword ? <EyeOff /> : <Eye />}
                 </button>
               </div>
@@ -180,14 +191,22 @@ const SignUpForm = () => {
                   onChange={handleInputChange}
                   required
                 />
-                <button type="button" onClick={toggleConfirmPasswordVisibility} className="absolute right-4 top-1/2 -translate-y-1/2">
+                <button
+                  type="button"
+                  onClick={toggleConfirmPasswordVisibility}
+                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                >
                   {showConfirmPassword ? <EyeOff /> : <Eye />}
                 </button>
               </div>
             </div>
 
             {/* Submit */}
-            <Button type="submit" disabled={loading} className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl text-lg font-semibold shadow-lg flex items-center justify-center">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl text-lg font-semibold shadow-lg flex items-center justify-center"
+            >
               {loading ? <Loader2 className="animate-spin mr-2" /> : "Create Account"}
             </Button>
           </form>
