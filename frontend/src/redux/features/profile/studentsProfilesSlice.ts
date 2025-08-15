@@ -1,4 +1,3 @@
-// src/redux/features/profiles/profilesSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { getAllProfiles } from "@/api/profileApi";
 import type { ProfileData } from "@/api/profileApi";

@@ -1,4 +1,3 @@
-// src/redux/features/profile/profileSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { getProfile, saveProfile } from "@/api/profileApi";
 

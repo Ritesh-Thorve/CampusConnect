@@ -24,7 +24,6 @@ const OAuthCallback = () => {
         const res = await googleAuthUser({
           fullname: user.user_metadata.full_name || user.user_metadata.name || "",
           email: user.email || "",
-          avatar: user.user_metadata.avatar_url || "",
           provider: "google",
           supabaseId: user.id,
           accessToken: session.access_token

@@ -1,4 +1,3 @@
-// src/pages/auth/SignUpForm.tsx
 import { useState, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, User, Mail, Lock, Loader2 } from "lucide-react";
@@ -14,6 +13,7 @@ import { supabaseClient } from "../../config/supabaseClient";
 const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { loading } = useAppSelector((state) => state.auth);
@@ -24,8 +24,6 @@ const SignUpForm = () => {
     password: "",
     confirmPassword: "",
   });
-
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +65,6 @@ const SignUpForm = () => {
       });
 
       if (error) throw error;
-      toast.success("Redirecting to Google...");
     } catch (err: any) {
       toast.error(err.message || "Google sign-in failed");
     } finally {

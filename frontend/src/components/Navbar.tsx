@@ -29,7 +29,7 @@ const Navbar = () => {
         description: "You have been signed out of your account.",
         duration: 3000,
       });
-
+      
       navigate('/login');
     } catch (error) {
       console.error('Error logging out:', error);

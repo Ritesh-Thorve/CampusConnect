@@ -31,6 +31,8 @@ const OAuthCallback = () => {
 
         dispatch(setCredentials(res));
         navigate("/profile");
+        toast.success("Google Login successful");
+        window.localStorage.setItem("accessToken", res.accessToken);
       } catch (err: any) {
         toast.error(err.message || "Google OAuth failed");
       }

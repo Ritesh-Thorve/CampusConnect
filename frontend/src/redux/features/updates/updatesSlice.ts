@@ -1,4 +1,3 @@
-// src/features/updates/updatesSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Update, createUpdateApi, getAllUpdatesApi, getUserUpdatesApi } from '../../../api/updatesApi';
 
