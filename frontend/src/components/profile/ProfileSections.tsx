@@ -121,7 +121,7 @@ export const CollegeImageUpload = ({ collegeImage, collegeIdCard, onUploadColleg
     <ImageUploader label="College Image" icon={<Building className="w-8 h-8 mb-2" />}
       imgSrc={collegeImage} onChange={onUploadCollege} labelColor="indigo" />
     <ImageUploader label="College ID Card" icon={<IdCard className="w-8 h-8 mb-2" />}
-      imgSrc={collegeIdCard} onChange={onUploadId} labelColor="purple" />
+      imgSrc={collegeIdCard} onChange={onUploadId} labelColor="indigo" />
   </div>
 );
 
