@@ -89,37 +89,52 @@ export const login = async (req, res, next) => {
 };
 
 // Google OAuth Sync
-export const syncGoogleUser = async (req, res) => {
+export const googleAuth = async (req, res) => {
   try {
-    const { token } = req.body; // Supabase access token from client
-    if (!token) return res.status(400).json({ error: "Token is required" });
+    const { access_token } = req.body;
 
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) {
-      return res.status(401).json({ error: "Invalid token" });
+    if (!access_token) {
+      return res.status(400).json({ error: "Access token is required" });
     }
 
-    let existingUser = await prisma.user.findUnique({ where: { email: user.email } });
-    if (!existingUser) {
-      existingUser = await prisma.user.create({
-        data: {
-          fullname: user.user_metadata.full_name || "Google User",
-          email: user.email,
-          provider: "google",
-          googleId: user.id,
-          supabaseId: user.id
-        }
+    // Verify access token with Supabase
+    const { data: userData, error } = await supabase.auth.getUser(access_token);
+    if (error || !userData?.user) {
+      return res.status(401).json({ error: "Invalid or expired access token" });
+    }
+
+    const { email, user_metadata, id: supabaseId } = userData.user;
+
+    // Get metadata from Supabase's Google OAuth
+    const fullname = user_metadata.full_name || "Google User";
+    const provider = "google";
+
+    // Sync user in Prisma
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: { email, fullname, provider, supabaseId }
+      });
+    } else {
+      user = await prisma.user.update({
+        where: { email },
+        data: { fullname, provider, supabaseId }
       });
     }
 
-    const appToken = generateToken(existingUser.id);
+    // Generate custom JWT
+    const token = generateToken(user.id);
 
+    // Send response
     res.json({
-      message: "Google user synced",
-      token: appToken,
-      user: existingUser
+      message: "Google OAuth successful",
+      user,
+      token
     });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error("Google Auth Error:", error);
+    res.status(500).json({ error: error.message });
   }
 };
+
+
