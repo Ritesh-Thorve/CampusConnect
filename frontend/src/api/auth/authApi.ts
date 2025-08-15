@@ -1,5 +1,6 @@
 import { axiosInstance } from "../axiosConfig";
 import { SignUpData, AuthResponse } from "../../redux/features/auth/types";
+import axios from "axios";
 
 // Helper for safer error extraction
 const extractErrorMsg = (error: any, fallback: string) =>
@@ -29,13 +30,29 @@ export const loginUser = async (email: string, password: string) => {
   }
 };
 
+// authApi.ts
+export const googleAuthUser = async (payload: {
+  fullname: string;
+  email: string;
+  provider: string;
+  supabaseId: string;
+  accessToken: string;
+}) => {
+  // Map camelCase to snake_case for backend
+  const backendPayload = {
+    fullname: payload.fullname,
+    email: payload.email,
+    provider: payload.provider,
+    supabaseId: payload.supabaseId,
+    access_token: payload.accessToken, // what backend expects
+  };
 
-// Login/Signup with Google (Supabase token)
-export const googleAuthUser = async (supabaseToken: string): Promise<AuthResponse> => {
-  try {
-    const res = await axiosInstance.post("/auth/google", { token: supabaseToken });
-    return res.data;
-  } catch (error: any) {
-    throw new Error(extractErrorMsg(error, "Google authentication failed"));
-  }
+  const { data } = await axiosInstance.post("/auth/google", backendPayload, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return data;
 };
+
+
+
+
