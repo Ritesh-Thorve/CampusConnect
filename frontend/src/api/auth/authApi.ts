@@ -30,7 +30,7 @@ export const loginUser = async (email: string, password: string) => {
   }
 };
 
-// authApi.ts
+// Login with Google
 export const googleAuthUser = async (payload: {
   fullname: string;
   email: string;
@@ -38,13 +38,13 @@ export const googleAuthUser = async (payload: {
   supabaseId: string;
   accessToken: string;
 }) => {
-  // Map camelCase to snake_case for backend
+
   const backendPayload = {
     fullname: payload.fullname,
     email: payload.email,
     provider: payload.provider,
     supabaseId: payload.supabaseId,
-    access_token: payload.accessToken, // what backend expects
+    access_token: payload.accessToken,
   };
 
   const { data } = await axiosInstance.post("/auth/google", backendPayload, {

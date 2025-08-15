@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { loginUser, googleAuthUser } from "../../api/auth/authApi";
 import { useAppDispatch } from "@/redux/store/hooks";
 import { setCredentials } from "@/redux/features/auth/authSlice";
+import { supabaseClient } from "../../config/supabaseClient";
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -23,9 +24,9 @@ const LoginForm = () => {
     setLoading(true);
     try {
       const res = await loginUser(formData.email, formData.password);
-      dispatch(setCredentials(res)); // ✅ Persist immediately
+      dispatch(setCredentials(res));
       toast.success("Logged in successfully!");
-      navigate("/profile"); // ✅ Go directly
+      navigate("/profile");
     } catch (error: any) {
       toast.error(error?.message || "Login failed");
     } finally {
@@ -38,18 +39,17 @@ const LoginForm = () => {
   };
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      const res = await googleAuthUser("mock-google-token"); // Replace with real
-      dispatch(setCredentials(res)); // ✅ Persist immediately
-      toast.success("Logged in with Google!");
-      navigate("/profile");
-    } catch (error: any) {
-      toast.error(error?.message || "Google login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/oauth-callback' },
+    });
+    if (error) throw error;
+  } catch (err: any) {
+    toast.error(err.message || 'Google login failed');
+  }
+};
+
 
   return (
     <div className="w-full max-w-lg">

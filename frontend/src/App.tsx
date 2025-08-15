@@ -15,6 +15,7 @@ import College from "./pages/College";
 import Updates from "./pages/Updates";
 import Trends from "./pages/Trends";
 import NotFound from "./pages/NotFound";
+import OAuthCallback from "./pages/OAuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -22,7 +23,7 @@ const App = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(hydrateFromStorage()); // ✅ Restore token/user at startup
+    dispatch(hydrateFromStorage()); // Restore token/user at startup
   }, [dispatch]);
 
   return (
@@ -35,6 +36,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/oauth-callback" element={<OAuthCallback />} />
             <Route path="/college" element={<College />} />
             <Route path="/updates" element={<Updates />} />
             <Route path="/trends" element={<Trends />} />
