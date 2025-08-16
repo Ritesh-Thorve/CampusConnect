@@ -11,7 +11,7 @@ import type { ProfileData } from '@/api/profileApi';
 export const ProfileImageUpload = ({
   profileImage,
   onUpload
-}: {
+}: {  
   profileImage: string;
   onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {

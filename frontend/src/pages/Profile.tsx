@@ -41,15 +41,14 @@ const Profile = () => {
     email: authEmail,
   });
 
+  // Fetch profile on token available
   useEffect(() => {
-    if (token) {
-      dispatch(fetchProfile());
-    }
+    if (token) dispatch(fetchProfile());
   }, [dispatch, token]);
 
+  // Update state when server profile is fetched
   useEffect(() => {
     if (serverProfile) {
-      // Map server profile to ProfileData shape
       const mapped = mapServerProfileToProfileData(serverProfile);
       setProfileData({
         ...mapped,
@@ -63,11 +62,13 @@ const Profile = () => {
     }
   }, [serverProfile, authEmail]);
 
+  // Handle text inputs
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setProfileData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Handle image uploads
   const handleImageUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "profile" | "college" | "collegeId"
@@ -93,6 +94,7 @@ const Profile = () => {
     reader.readAsDataURL(file);
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -105,6 +107,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
+      {/* Navbar */}
       <div className="hidden md:block"><Navbar /></div>
       <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 py-3 px-4">
         <div className="flex items-center justify-center">
@@ -113,6 +116,7 @@ const Profile = () => {
         </div>
       </div>
 
+      {/* Main Form */}
       <main className="min-h-screen flex-1 pb-28 md:pb-0 overflow-y-auto relative z-0">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
           <ProfileForm
@@ -126,6 +130,7 @@ const Profile = () => {
         </div>
       </main>
 
+      {/* Footer */}
       <div className="hidden md:block"><Footer /></div>
       <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
     </div>
