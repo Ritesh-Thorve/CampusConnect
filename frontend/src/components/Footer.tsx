@@ -38,9 +38,9 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold text-lg mb-4">Platform</h3>
             <ul className="space-y-2 text-gray-400">
-              <li><Link to="/communities" className="hover:text-white transition-colors">Communities</Link></li>
-              <li><Link to="/hackathons" className="hover:text-white transition-colors">Hackathons</Link></li>
-              <li><Link to="/jobs" className="hover:text-white transition-colors">Job Board</Link></li>
+              <li><Link to="/trends" className="hover:text-white transition-colors">Communities</Link></li>
+              <li><Link to="/updates" className="hover:text-white transition-colors">Hackathons</Link></li>
+              <li><Link to="/updates" className="hover:text-white transition-colors">Job Board</Link></li>
               <li><Link to="/trends" className="hover:text-white transition-colors">Trending</Link></li>
             </ul>
           </div>
@@ -69,7 +69,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 CampusConnect. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} CampusConnect. All rights reserved.</p>
         </div>
       </div>
     </footer>
