@@ -14,6 +14,8 @@ const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState(""); // <-- new state
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { loading } = useAppSelector((state) => state.auth);
@@ -25,26 +27,33 @@ const SignUpForm = () => {
     confirmPassword: "",
   });
 
-  // Handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "confirmPassword" || name === "password") {
+      setPasswordError(""); // reset error when typing
+    }
   };
 
-  // Toggle password visibility
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword((prev) => !prev);
 
-  // Email/Password Sign Up
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
+      setPasswordError("Passwords do not match");
       return;
     }
 
-    dispatch(registerUser(formData))
+    // Only send fields the backend expects (exclude confirmPassword)
+    const payload = {
+      fullname: formData.fullname,
+      email: formData.email,
+      password: formData.password,
+    };
+
+    dispatch(registerUser(payload))
       .unwrap()
       .then(() => {
         toast.success("Account created successfully!");
@@ -53,17 +62,13 @@ const SignUpForm = () => {
       .catch((err) => toast.error(err || "Failed to create account"));
   };
 
-  // Google sign-up
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
     try {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/oauth-callback`,
-        },
+        options: { redirectTo: `${window.location.origin}/oauth-callback` },
       });
-
       if (error) throw error;
     } catch (err: any) {
       toast.error(err.message || "Google sign-in failed");
@@ -196,6 +201,7 @@ const SignUpForm = () => {
                   {showConfirmPassword ? <EyeOff /> : <Eye />}
                 </button>
               </div>
+              {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
             </div>
 
             {/* Submit */}
