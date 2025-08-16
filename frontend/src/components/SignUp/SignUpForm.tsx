@@ -14,7 +14,7 @@ const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState(""); // <-- new state
+  const [passwordError, setPasswordError] = useState(""); // <-- password mismatch state
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -30,8 +30,17 @@ const SignUpForm = () => {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (name === "confirmPassword" || name === "password") {
-      setPasswordError(""); // reset error when typing
+
+    // Live password check
+    if (name === "password" || name === "confirmPassword") {
+      if (
+        (name === "password" && formData.confirmPassword && value !== formData.confirmPassword) ||
+        (name === "confirmPassword" && formData.password && value !== formData.password)
+      ) {
+        setPasswordError("Passwords do not match");
+      } else {
+        setPasswordError("");
+      }
     }
   };
 
@@ -46,7 +55,6 @@ const SignUpForm = () => {
       return;
     }
 
-    // Only send fields the backend expects (exclude confirmPassword)
     const payload = {
       fullname: formData.fullname,
       email: formData.email,
@@ -59,7 +67,7 @@ const SignUpForm = () => {
         toast.success("Account created successfully!");
         navigate("/profile");
       })
-      .catch((err) => toast.error(err || "Failed to create account"));
+      .catch((err) => toast.error("Failed to create account"));
   };
 
   const handleGoogleSignUp = async () => {
@@ -207,7 +215,7 @@ const SignUpForm = () => {
             {/* Submit */}
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || !!passwordError}
               className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl text-lg font-semibold shadow-lg flex items-center justify-center"
             >
               {loading ? <Loader2 className="animate-spin mr-2" /> : "Create Account"}

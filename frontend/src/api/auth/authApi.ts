@@ -1,6 +1,5 @@
 import { axiosInstance } from "../axiosConfig";
 import { SignUpData, AuthResponse } from "../../redux/features/auth/types";
-import axios from "axios";
 
 // Helper for safer error extraction
 const extractErrorMsg = (error: any, fallback: string) =>

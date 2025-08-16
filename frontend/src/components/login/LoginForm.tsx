@@ -27,8 +27,8 @@ const LoginForm = () => {
       dispatch(setCredentials(res));
       toast.success("Logged in successfully!");
       navigate("/profile");
-    } catch (error: any) {
-      toast.error(error?.message || "Login failed");
+    } catch (error) {
+      toast.error("Invalid Credentials");
     } finally {
       setLoading(false);
     }
