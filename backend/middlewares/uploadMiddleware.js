@@ -1,4 +1,5 @@
 import multer from "multer";
+
 const storage = multer.memoryStorage();
 
 const upload = multer({
@@ -9,21 +10,23 @@ const upload = multer({
       return cb(new Error("Only image files are allowed"), false);
     }
     cb(null, true);
-  }
+  },
 });
 
 export const profileUpload = upload.fields([
   { name: "profileImg", maxCount: 1 },
   { name: "collegeImage", maxCount: 1 },
-  { name: "collegeIdCard", maxCount: 1 }
+  { name: "collegeIdCard", maxCount: 1 },
 ]);
 
-// Error handler
+// Error handler middleware
 export const handleMulterError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
-    return res.status(400).json({ error: err.message });
+    console.error("Multer error:", err.message);
+    return res.status(400).json({ error: `Multer error: ${err.message}` });
   } else if (err) {
-    return res.status(400).json({ error: err.message });
+    console.error("Upload error:", err.message);
+    return res.status(400).json({ error: `Upload error: ${err.message}` });
   }
   next();
 };

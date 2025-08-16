@@ -2,7 +2,7 @@ import prisma from "../config/db.js";
 import { uploadFile } from "../utils/upload.js";
 import Joi from "joi";
 
-// Joi Schema (improved graduation year validation)
+// ✅ Joi Schema (with graduation year validation)
 const profileSchema = Joi.object({
   fullName: Joi.string().required(),
   collegeName: Joi.string().required(),
@@ -17,10 +17,9 @@ const profileSchema = Joi.object({
   linkedIn: Joi.string().uri().optional(),
   twitter: Joi.string().uri().optional(),
   github: Joi.string().uri().optional(),
-  instagram: Joi.string().uri().optional(),
 });
 
-// Create or Update Profile
+// ✅ Create or Update Profile
 export const createOrUpdateProfile = async (req, res) => {
   try {
     const userId = req.user?.userId;
@@ -28,27 +27,38 @@ export const createOrUpdateProfile = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+    // Validate request body
+    const { error } = profileSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+
     const data = {
       fullName: req.body.fullName,
       collegeName: req.body.collegeName,
       collegeAddress: req.body.collegeAddress,
       fieldOfStudy: req.body.fieldOfStudy,
-      graduationYear: parseInt(req.body.graduationYear) || null,
+      graduationYear: parseInt(req.body.graduationYear, 10) || null,
       bio: req.body.bio || null,
       linkedIn: req.body.linkedIn || null,
       twitter: req.body.twitter || null,
       github: req.body.github || null,
     };
 
-    // Handling file uploads using multer
-    if (req.files?.profileImg?.[0]) {
-      data.profileImg = `/uploads/${req.files.profileImg[0].filename}`;
-    }
-    if (req.files?.collegeImage?.[0]) {
-      data.collegeImage = `/uploads/${req.files.collegeImage[0].filename}`;
-    }
-    if (req.files?.collegeIdCard?.[0]) {
-      data.collegeIdCard = `/uploads/${req.files.collegeIdCard[0].filename}`;
+    // ✅ Upload images to Supabase (store public URLs)
+    try {
+      if (req.files?.profileImg?.[0]) {
+        data.profileImg = await uploadFile("profile-images", req.files.profileImg[0]);
+      }
+      if (req.files?.collegeImage?.[0]) {
+        data.collegeImage = await uploadFile("college-images", req.files.collegeImage[0]);
+      }
+      if (req.files?.collegeIdCard?.[0]) {
+        data.collegeIdCard = await uploadFile("college-id-cards", req.files.collegeIdCard[0]);
+      }
+    } catch (uploadErr) {
+      console.error("Supabase upload error:", uploadErr.message);
+      return res.status(400).json({ error: uploadErr.message });
     }
 
     const profile = await prisma.profile.upsert({
@@ -64,7 +74,7 @@ export const createOrUpdateProfile = async (req, res) => {
   }
 };
 
-// Get My Profile
+// ✅ Get My Profile
 export const getMyProfile = async (req, res) => {
   try {
     const userId = req.user?.userId;
@@ -83,15 +93,14 @@ export const getMyProfile = async (req, res) => {
       return res.status(404).json({ error: "Profile not found" });
     }
 
-    res.json(profile);
+    res.json(profile); // Supabase URLs are stored directly
   } catch (err) {
     console.error("Error fetching profile:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
-
-// Get All Profiles with pagination + filtering
+// ✅ Get All Profiles (with pagination + filtering)
 export const getAllProfiles = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -101,7 +110,7 @@ export const getAllProfiles = async (req, res) => {
     const { collegeName, graduationYear } = req.query;
 
     const where = {};
-    if (collegeName) where.collegeName = collegeName;
+    if (collegeName) where.collegeName = { contains: collegeName, mode: "insensitive" };
     if (!isNaN(parseInt(graduationYear, 10))) {
       where.graduationYear = parseInt(graduationYear, 10);
     }
