@@ -11,12 +11,12 @@ const initialState: PaymentState = {
   loading: true,
 };
 
-// ✅ Fetch payment status from backend
+// Fetch payment status from backend
 export const fetchPaymentStatus = createAsyncThunk(
   "payment/fetchStatus",
   async () => {
     const res = await getPaymentStatus();
-    return res?.status === "paid"; // true if user has paid
+    return res?.status === "paid"; 
   }
 );
 
@@ -24,7 +24,6 @@ const paymentSlice = createSlice({
   name: "payment",
   initialState,
   reducers: {
-    // ✅ Mark payment as paid immediately after successful Razorpay payment
     markPaid: (state) => {
       state.hasPaid = true;
     },

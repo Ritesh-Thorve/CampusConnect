@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import StudentCard from "@/components/college/StudentCard";
 import EmptyState from "@/components/college/EmptyState";
 import PaymentPrompt from "@/components/PaymentPrompt";
-import { usePaymentStatus } from "@/hooks/usePaymentStatus"; // ✅ Import hook
+import { usePaymentStatus } from "@/hooks/usePaymentStatus";
 import type { RootState } from "@/redux/store/store";
 import type { StudentProfile } from "@/types/student";
 
@@ -20,7 +20,7 @@ const College = () => {
   const [page, setPage] = useState(1);
   const limit = 6;
 
-  const { hasPaid, loading: paymentLoading } = usePaymentStatus(); // ✅ Hook usage
+  const { hasPaid, loading: paymentLoading } = usePaymentStatus(); 
 
   useEffect(() => {
     dispatch(fetchAllProfiles({ page, limit }));
@@ -111,7 +111,7 @@ const College = () => {
       <div className="hidden md:block"><Footer /></div>
       <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
 
-      {/* ✅ Payment Prompt only if user hasn't paid */}
+      // Payment Prompt only if user hasn't paid
       {!hasPaid && <PaymentPrompt onClose={() => {}} />}
     </div>
   );

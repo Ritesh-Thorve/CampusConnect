@@ -4,11 +4,11 @@ interface BlogCardProps {
   item: {
     id: string;
     title: string;
-    content?: string;       // For blogs
-    description?: string;   // For trends
-    author?: string;        // Only blogs
-    date?: string;          // Only blogs
-    tags: string[] | string; // Blog tags or trend tag
+    content?: string;       
+    description?: string;   
+    author?: string;       
+    date?: string;         
+    tags: string[] | string; 
   };
 }
 

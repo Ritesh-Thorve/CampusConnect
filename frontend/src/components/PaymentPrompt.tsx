@@ -19,10 +19,10 @@ const PaymentPrompt = ({ onClose }) => {
 
   const handlePayment = async () => {
     try {
-      // 1️⃣ Create order from backend
+      // Create order from backend
       const { order } = await createOrder();
 
-      // 2️⃣ Open Razorpay checkout
+      // Open Razorpay checkout
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: order.amount,
@@ -32,14 +32,14 @@ const PaymentPrompt = ({ onClose }) => {
         order_id: order.id,
         handler: async (response) => {
           try {
-            // 3️⃣ Verify payment with backend
+            // Verify payment with backend
             await verifyPayment({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
 
-            // 4️⃣ Update Redux and hide modal
+            // Update Redux and hide modal
             dispatch(markPaid());
             handleClose();
           } catch (err) {

@@ -5,7 +5,7 @@ import { signUpUser } from "@/api/auth/authApi";
 interface AuthState {
   user: User | null;
   token: string | null;
-  expiry: number | null; // JWT expiry timestamp in ms
+  expiry: number | null; 
   loading: boolean;
   error: string | null;
 }

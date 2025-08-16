@@ -2,10 +2,8 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/store/hooks";
 import { fetchPaymentStatus, markPaid } from "../redux/features/payment/paymentSlice";
 
-/**
- * Custom hook to manage payment status.
- * Returns { hasPaid, loading } which you can use to conditionally show PaymentPrompt.
- */
+// Custom hook to manage payment status.
+
 export const usePaymentStatus = () => {
   const dispatch = useAppDispatch();
   const { hasPaid, loading } = useAppSelector((state) => state.payment);
