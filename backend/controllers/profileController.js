@@ -2,7 +2,7 @@ import prisma from "../config/db.js";
 import { uploadFile } from "../utils/upload.js";
 import Joi from "joi";
 
-// ✅ Joi Schema (with graduation year validation)
+// Joi Schema (with graduation year validation)
 const profileSchema = Joi.object({
   fullName: Joi.string().required(),
   collegeName: Joi.string().required(),
@@ -19,7 +19,7 @@ const profileSchema = Joi.object({
   github: Joi.string().uri().optional(),
 });
 
-// ✅ Create or Update Profile
+// Create or Update Profile
 export const createOrUpdateProfile = async (req, res) => {
   try {
     const userId = req.user?.userId;
@@ -45,7 +45,7 @@ export const createOrUpdateProfile = async (req, res) => {
       github: req.body.github || null,
     };
 
-    // ✅ Upload images to Supabase (store public URLs)
+    // Upload images to Supabase (store public URLs)
     try {
       if (req.files?.profileImg?.[0]) {
         data.profileImg = await uploadFile("profile-images", req.files.profileImg[0]);
@@ -74,7 +74,7 @@ export const createOrUpdateProfile = async (req, res) => {
   }
 };
 
-// ✅ Get My Profile
+// Get My Profile
 export const getMyProfile = async (req, res) => {
   try {
     const userId = req.user?.userId;
@@ -100,7 +100,7 @@ export const getMyProfile = async (req, res) => {
   }
 };
 
-// ✅ Get All Profiles (with pagination + filtering)
+// Get All Profiles (with pagination + filtering)
 export const getAllProfiles = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;

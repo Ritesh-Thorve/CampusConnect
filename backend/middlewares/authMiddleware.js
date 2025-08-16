@@ -12,7 +12,6 @@ export const authMiddleware = (req, res, next) => {
       return res.status(401).json({ error: "Authorization token missing" });
     }
 
-    // Support "Bearer token" format
     if (token.startsWith("Bearer ")) {
       token = token.split(" ")[1];
     }

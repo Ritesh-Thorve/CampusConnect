@@ -1,18 +1,13 @@
 import { supabase } from "../config/supabase.js";
 import { v4 as uuid } from "uuid";
 
-/**
- * Upload a file to Supabase storage and return its public URL
- * @param {string} bucket - The bucket name
- * @param {object} file - The multer file (with buffer, mimetype, etc.)
- * @returns {Promise<string>} Public URL
- */
+//Upload a file to Supabase storage and return its public URL
 export const uploadFile = async (bucket, file) => {
   if (!file) {
     throw new Error("No file provided");
   }
 
-  // ✅ Extra file size check (2MB max)
+  // Extra file size check (2MB max)
   const MAX_SIZE = 2 * 1024 * 1024; // 2MB
   if (file.size > MAX_SIZE) {
     throw new Error(`File size exceeds 2MB: ${file.originalname}`);
