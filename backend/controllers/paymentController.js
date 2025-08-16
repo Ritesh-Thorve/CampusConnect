@@ -1,27 +1,21 @@
 import { razorpay } from "../utils/razorpay.js";
 import prisma from "../config/db.js";
+import crypto from "crypto";
 
-/**
- * @desc Create a Razorpay order with a fixed amount of ₹100
- * @route POST /payment/order
- * @access Private (JWT Required)
- */
+// Create a Razorpay order
 export const createOrder = async (req, res) => {
   try {
     const userId = req.user.userId;
     const FIXED_AMOUNT = 100; // ₹100
 
-    // Razorpay expects amount in paise
     const options = {
-      amount: FIXED_AMOUNT * 100, // 100 * 100 = 10,000 paise
+      amount: FIXED_AMOUNT * 100, // in paise
       currency: "INR",
       receipt: `receipt_${Date.now()}`
     };
 
-    // Create order in Razorpay
     const order = await razorpay.orders.create(options);
 
-    // Save order details in DB
     await prisma.payment.create({
       data: {
         userId,
@@ -41,3 +35,53 @@ export const createOrder = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+//Verify Razorpay payment signature and update DB
+export const verifyPayment = async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest("hex");
+
+    if (expectedSignature === razorpay_signature) {
+      await prisma.payment.updateMany({
+        where: { razorpayId: razorpay_order_id },
+        data: { status: "paid" }
+      });
+
+      return res.json({ success: true, message: "Payment verified successfully" });
+    } else {
+      return res.status(400).json({ success: false, message: "Invalid signature" });
+    }
+  } catch (err) {
+    console.error("Payment verification failed:", err.message);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Get user payment status
+export const getPaymentStatus = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const payment = await prisma.payment.findFirst({
+      where: { userId, status: "paid" },
+    });
+
+    if (payment) {
+      return res.json({ status: "paid" });
+    } else {
+      return res.json({ status: "unpaid" });
+    }
+  } catch (err) {
+    console.error("Error fetching payment status:", err.message);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
