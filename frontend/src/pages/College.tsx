@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { fetchAllProfiles } from '../redux/features/profile/studentsProfilesSlice';
-import { useAppDispatch } from '@/redux/store/hooks';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import StudentCard from '@/components/college/StudentCard';
-import EmptyState from '@/components/college/EmptyState';
-import PaymentPrompt from '@/components/PaymentPrompt';
-import type { RootState } from '@/redux/store/store';
-import type { StudentProfile } from '@/types/student';
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { fetchAllProfiles } from "../redux/features/profile/studentsProfilesSlice";
+import { useAppDispatch } from "@/redux/store/hooks";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import StudentCard from "@/components/college/StudentCard";
+import EmptyState from "@/components/college/EmptyState";
+import PaymentPrompt from "@/components/PaymentPrompt";
+import { usePaymentStatus } from "@/hooks/usePaymentStatus"; // ✅ Import hook
+import type { RootState } from "@/redux/store/store";
+import type { StudentProfile } from "@/types/student";
 
 const College = () => {
   const dispatch = useAppDispatch();
@@ -16,9 +17,10 @@ const College = () => {
     (state: RootState) => state.allStudentsProfiles
   );
 
-  const [showPaymentPrompt, setShowPaymentPrompt] = useState(true);
   const [page, setPage] = useState(1);
   const limit = 6;
+
+  const { hasPaid, loading: paymentLoading } = usePaymentStatus(); // ✅ Hook usage
 
   useEffect(() => {
     dispatch(fetchAllProfiles({ page, limit }));
@@ -40,8 +42,10 @@ const College = () => {
     profileImage: s.profileImage || "",
     collegeImage: s.collegeImage || "",
     collegeIdCard: s.collegeIdCard || "",
-    major: s.fieldOfStudy || "", // or s.major if available
+    major: s.fieldOfStudy || "",
   }));
+
+  if (paymentLoading) return <p>Loading...</p>; // optional loading for payment status
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
@@ -107,8 +111,8 @@ const College = () => {
       <div className="hidden md:block"><Footer /></div>
       <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
 
-      {/* Payment Prompt */}
-      {showPaymentPrompt && <PaymentPrompt onClose={() => setShowPaymentPrompt(false)} />}
+      {/* ✅ Payment Prompt only if user hasn't paid */}
+      {!hasPaid && <PaymentPrompt onClose={() => {}} />}
     </div>
   );
 };

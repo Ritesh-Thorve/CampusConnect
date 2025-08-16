@@ -4,15 +4,16 @@ import profile from "../features/profile/profileSlice"
 import trendsReducer from '../features/trends/trendsSlice';
 import updatesReducer from '../features/updates/updatesSlice';
 import profilesReducer from "../features/profile/studentsProfilesSlice";
-
+import paymentReducer from "../features/payment/paymentSlice";
 
 export const store = configureStore({
   reducer: {
     auth,
     profile,
-    allStudentsProfiles: profilesReducer, 
+    allStudentsProfiles: profilesReducer,
     trends: trendsReducer,
     updates: updatesReducer,
+    payment: paymentReducer,
   },
 });
 
