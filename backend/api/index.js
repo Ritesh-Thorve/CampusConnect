@@ -1,5 +1,10 @@
-import app from '../server.js';
-import serverless from 'serverless-http';
+import app from "../server.js"; 
+import serverless from "serverless-http";
 
-// Wrap Express app for Vercel serverless
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default serverless(app);

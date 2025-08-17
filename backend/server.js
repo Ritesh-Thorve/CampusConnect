@@ -19,7 +19,7 @@ dotenv.config();
 const app = express();
 
 const allowedOrigins = [
-  process.env.CLIENT_URL,              
+  process.env.CLIENT_URL,         
 ];
 
 app.use(cors({
@@ -32,7 +32,6 @@ app.use(cors({
   },
   credentials: true
 }));
-
 
 app.use(helmet());
 app.use(morgan('dev'));
@@ -48,7 +47,7 @@ app.use('/api/trends', trendsRoute);
 app.use('/api/payment', paymentRoute);
 
 app.get('/', (req, res) => {
-  res.send("server is running ✅");
+  res.send("server is running");
 });
 
 // Error handler
