@@ -1,4 +1,4 @@
-import app from "../server.js"; 
+import app from "../app";
 import serverless from "serverless-http";
 
 export const config = {
@@ -6,5 +6,7 @@ export const config = {
     bodyParser: false,
   },
 };
+
+console.log("Vercel serverless function initialized");
 
 export default serverless(app);
