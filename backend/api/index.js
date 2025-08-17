@@ -1,3 +1,5 @@
-import app from '../server';
+import app from '../server.js';
+import serverless from 'serverless-http';
 
-export default app;
+// Wrap Express app for Vercel serverless
+export default serverless(app);

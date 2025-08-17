@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "postinstall": "prisma generate",
+    "vercel-build": "echo 'Build complete"
   },
   "author": "",
   "license": "ISC",
@@ -13,7 +15,7 @@
   "dependencies": {
     "@prisma/client": "^6.12.0",
     "@supabase/supabase-js": "^2.52.1",
-    "@vercel/node": "^5.3.13",
+    "@vercel/node": "^4.0.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^17.2.0",
@@ -28,6 +30,7 @@
     "nodemon": "^3.1.10",
     "prisma": "^6.12.0",
     "razorpay": "^2.9.6",
+    "serverless-http": "^3.2.0",
     "uuid": "^11.1.0"
   }
 }
