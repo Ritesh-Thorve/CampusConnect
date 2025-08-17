@@ -1,13 +1,13 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "app.js",
+  "main": "api/index.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
     "postinstall": "prisma generate",
-    "vercel-build": "echo 'Build complete"
+    "vercel-build": "echo 'Build complete'"
   },
   "author": "",
   "license": "ISC",
