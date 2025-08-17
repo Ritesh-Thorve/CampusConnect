@@ -7,9 +7,4 @@ export const config = {
   },
 };
 
-// Health check route
-app.get("/", (req, res) => {
-  res.send("Vercel backend is running");
-});
-
 export default serverless(app);
