@@ -1,7 +1,3 @@
-import app from "../app.js"; // your existing Express app
-import { VercelRequest, VercelResponse } from "@vercel/node";
+import app from '../server';
 
-// Export serverless handler
-export default function handler(req, res) {
-  app(req, res);
-}
+export default app;
