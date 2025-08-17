@@ -1,4 +1,4 @@
-import app from "../app.js"
+import app from '../app'
 import serverless from "serverless-http";
 
 export const config = {
@@ -7,6 +7,9 @@ export const config = {
   },
 };
 
-console.log("Vercel serverless function initialized");
+// Health check route
+app.get("/", (req, res) => {
+  res.send("Vercel backend is running");
+});
 
 export default serverless(app);
