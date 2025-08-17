@@ -37,7 +37,12 @@ app.use('/api/updates', updatesRoute);
 app.use('/api/trends', trendsRoute);
 app.use('/api/payment', paymentRoute);
 
+app.use('/', (req, res) => {
+    res.send("server is running")
+})
+
 // Global Error Handler
 app.use(errorHandlerMiddleware);
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+export default app
