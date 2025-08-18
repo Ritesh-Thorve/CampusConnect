@@ -45,7 +45,14 @@ const College = () => {
     major: s.fieldOfStudy || "",
   }));
 
-  if (paymentLoading) return <p>Loading...</p>; // optional loading for payment status
+  // 🔹 Show loader until both payment + profiles are ready
+  if (paymentLoading || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
@@ -71,7 +78,6 @@ const College = () => {
             </p>
           </div>
 
-          {loading && <p className="text-center text-gray-500">Loading students...</p>}
           {error && <p className="text-center text-red-500">{error}</p>}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
@@ -80,7 +86,7 @@ const College = () => {
             ))}
           </div>
 
-          {students.length === 0 && !loading && <EmptyState />}
+          {students.length === 0 && <EmptyState />}
 
           {/* Pagination */}
           {data?.totalPages && data.totalPages > 1 && (
@@ -111,7 +117,7 @@ const College = () => {
       <div className="hidden md:block"><Footer /></div>
       <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
 
-      // Payment Prompt only if user hasn't paid
+      {/* Payment Prompt only if user hasn't paid */}
       {!hasPaid && <PaymentPrompt onClose={() => {}} />}
     </div>
   );
