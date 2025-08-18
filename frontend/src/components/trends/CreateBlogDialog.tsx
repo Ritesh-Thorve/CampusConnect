@@ -12,13 +12,14 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/redux/store/store";
 import { addTrend, getTrends } from "@/redux/features/trends/trendsSlice";
-import { useToast } from "@/components/ui/use-toast";
+import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 const CreateBlogDialog: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { toast } = useToast();
 
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [newBlog, setNewBlog] = useState({
     title: "",
     content: "",
@@ -27,16 +28,13 @@ const CreateBlogDialog: React.FC = () => {
 
   const handleSubmitBlog = async () => {
     if (!newBlog.title || !newBlog.content || !newBlog.tags) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill in all fields before publishing.",
-        variant: "destructive",
-      });
+      toast.error("Please fill in all fields before publishing.");
       return;
     }
 
     try {
-      // create trend
+      setLoading(true);
+
       await dispatch(
         addTrend({
           title: newBlog.title,
@@ -45,23 +43,16 @@ const CreateBlogDialog: React.FC = () => {
         })
       ).unwrap();
 
-      // refetch trends
       await dispatch(getTrends());
 
-      toast({
-        title: "Trend published",
-        description: "Your trend was successfully created!",
-      });
+      toast.success("Trend published successfully! 🎉");
 
-      // reset + close dialog
       setNewBlog({ title: "", content: "", tags: "" });
       setOpen(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to publish trend. Try again later.",
-        variant: "destructive",
-      });
+      toast.error("Failed to publish trend. Try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,7 +78,9 @@ const CreateBlogDialog: React.FC = () => {
           <Textarea
             placeholder="Trend description..."
             value={newBlog.content}
-            onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
+            onChange={(e) =>
+              setNewBlog({ ...newBlog, content: e.target.value })
+            }
           />
           <Input
             placeholder="Tag"
@@ -99,10 +92,20 @@ const CreateBlogDialog: React.FC = () => {
             <Button
               variant="outline"
               onClick={() => setNewBlog({ title: "", content: "", tags: "" })}
+              disabled={loading}
             >
               Cancel
             </Button>
-            <Button onClick={handleSubmitBlog}>Publish</Button>
+            <Button onClick={handleSubmitBlog} disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Publishing...
+                </>
+              ) : (
+                "Publish"
+              )}
+            </Button>
           </div>
         </div>
       </DialogContent>
