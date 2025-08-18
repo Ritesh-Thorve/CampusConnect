@@ -2,7 +2,7 @@ import axios from "axios";
 import { store } from "../redux/store/store";
 import { logout } from "@/redux/features/auth/authSlice";
 
-const baseURL = import.meta.env.VITE_BACKEND_API_URL;
+const baseURL = `${import.meta.env.VITE_BACKEND_API_URL}/api`;
 
 export const axiosInstance = axios.create({
   baseURL, 
