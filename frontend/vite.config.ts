@@ -14,9 +14,10 @@ export default defineConfig({
       }
     }
   },
-  plugins: [
-    react()
-  ],
+  build: {
+    outDir: "dist" 
+  },
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

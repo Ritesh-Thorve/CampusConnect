@@ -48,8 +48,24 @@ const College = () => {
   // 🔹 Show loader until both payment + profiles are ready
   if (paymentLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+        {/* Navbar */}
+        <div className="hidden md:block"><Navbar /></div>
+        <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 py-3 px-4">
+          <div className="flex items-center justify-center">
+            <img src="/compus-connect_logo.png" alt="Campus Connect" className="h-6 w-6 mr-2 object-cover" />
+            <span className="text-sm font-semibold text-gray-800">Campus Connect</span>
+          </div>
+        </div>
+
+        {/* Loader in middle of content */}
+        <main className="flex-1 flex items-center justify-center">
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        </main>
+
+        {/* Footer */}
+        <div className="hidden md:block"><Footer /></div>
+        <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
       </div>
     );
   }
