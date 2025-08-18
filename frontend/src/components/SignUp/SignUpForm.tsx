@@ -14,7 +14,7 @@ const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState(""); // <-- password mismatch state
+  const [passwordError, setPasswordError] = useState(""); 
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -75,7 +75,7 @@ const SignUpForm = () => {
     try {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/oauth-callback` },
+        options: { redirectTo: 'https://campus-connect-official.vercel.app' },
       });
       if (error) throw error;
     } catch (err: any) {
