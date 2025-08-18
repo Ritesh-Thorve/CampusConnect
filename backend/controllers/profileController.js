@@ -136,6 +136,9 @@ export const getAllProfiles = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getAllProfiles:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: error.message,
+    });
   }
 };
