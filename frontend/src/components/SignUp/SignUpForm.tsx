@@ -75,7 +75,7 @@ const SignUpForm = () => {
     try {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/oauth-callback` },
+        options: { redirectTo: "https://campus-connect-official.vercel.app/profile", },
       });
       if (error) throw error;
     } catch (err: any) {
