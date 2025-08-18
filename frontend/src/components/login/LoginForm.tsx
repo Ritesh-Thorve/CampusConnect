@@ -42,7 +42,7 @@ const LoginForm = () => {
   try {
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: "https://campus-connect-official.vercel.app/profile", },
+      options: { redirectTo: `${window.location.origin}/oauth-callback` },
     });
     if (error) throw error;
   } catch (err: any) {
