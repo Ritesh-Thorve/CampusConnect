@@ -35,7 +35,7 @@ export const googleAuthUser = async (payload: {
   email: string;
   provider: string;
   supabaseId: string;
-  accessToken: string;
+  access_token: string;
 }) => {
 
   const backendPayload = {
@@ -43,7 +43,7 @@ export const googleAuthUser = async (payload: {
     email: payload.email,
     provider: payload.provider,
     supabaseId: payload.supabaseId,
-    access_token: payload.accessToken,
+    access_token: payload.access_token,
   };
 
   const { data } = await axiosInstance.post("/auth/google", backendPayload, {
