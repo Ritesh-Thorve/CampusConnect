@@ -1,33 +1,72 @@
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle } from 'lucide-react';
-import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import type { AppDispatch } from '@/redux/store/store';
-import { addTrend } from '@/redux/features/trends/trendsSlice';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/redux/store/store";
+import { addTrend, getTrends } from "@/redux/features/trends/trendsSlice";
+import { useToast } from "@/components/ui/use-toast";
 
-interface CreateBlogDialogProps {
-  newBlog: {
-    title: string;
-    content: string;
-    tags: string;
+const CreateBlogDialog: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { toast } = useToast();
+
+  const [open, setOpen] = useState(false);
+  const [newBlog, setNewBlog] = useState({
+    title: "",
+    content: "",
+    tags: "",
+  });
+
+  const handleSubmitBlog = async () => {
+    if (!newBlog.title || !newBlog.content || !newBlog.tags) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all fields before publishing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // create trend
+      await dispatch(
+        addTrend({
+          title: newBlog.title,
+          description: newBlog.content,
+          tag: newBlog.tags,
+        })
+      ).unwrap();
+
+      // refetch trends
+      await dispatch(getTrends());
+
+      toast({
+        title: "Trend published",
+        description: "Your trend was successfully created!",
+      });
+
+      // reset + close dialog
+      setNewBlog({ title: "", content: "", tags: "" });
+      setOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to publish trend. Try again later.",
+        variant: "destructive",
+      });
+    }
   };
-  setNewBlog: React.Dispatch<React.SetStateAction<{
-    title: string;
-    content: string;
-    tags: string;
-  }>>;
-  handleSubmitBlog: () => void;
-}
 
-
-const CreateBlogDialog: React.FC<CreateBlogDialogProps> = ({ newBlog, setNewBlog, handleSubmitBlog }) => {
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 h-10 px-4 rounded-lg shadow">
           Create Trend
@@ -57,12 +96,13 @@ const CreateBlogDialog: React.FC<CreateBlogDialogProps> = ({ newBlog, setNewBlog
           />
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setNewBlog({ title: '', content: '', tags: '' })}>
+            <Button
+              variant="outline"
+              onClick={() => setNewBlog({ title: "", content: "", tags: "" })}
+            >
               Cancel
             </Button>
-            <Button onClick={handleSubmitBlog}>
-              Publish
-            </Button>
+            <Button onClick={handleSubmitBlog}>Publish</Button>
           </div>
         </div>
       </DialogContent>
@@ -71,4 +111,3 @@ const CreateBlogDialog: React.FC<CreateBlogDialogProps> = ({ newBlog, setNewBlog
 };
 
 export default CreateBlogDialog;
-

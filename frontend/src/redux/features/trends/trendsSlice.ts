@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import * as trendsApi from '@/api/trendsApi';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import * as trendsApi from "@/api/trendsApi";
 
 interface Trend {
   id: string;
@@ -22,7 +22,7 @@ const initialState: TrendsState = {
 
 // Fetch trends
 export const getTrends = createAsyncThunk(
-  'trends/getTrends',
+  "trends/getTrends",
   async (_, { rejectWithValue }) => {
     try {
       return await trendsApi.fetchTrends();
@@ -34,8 +34,11 @@ export const getTrends = createAsyncThunk(
 
 // Add new trend
 export const addTrend = createAsyncThunk(
-  'trends/addTrend',
-  async (trendData: { title: string; description: string; tag: string }, { rejectWithValue }) => {
+  "trends/addTrend",
+  async (
+    trendData: { title: string; description: string; tag: string },
+    { rejectWithValue }
+  ) => {
     try {
       return await trendsApi.createTrend(trendData);
     } catch (error: any) {
@@ -45,7 +48,7 @@ export const addTrend = createAsyncThunk(
 );
 
 const trendsSlice = createSlice({
-  name: 'trends',
+  name: "trends",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -70,7 +73,7 @@ const trendsSlice = createSlice({
       })
       .addCase(addTrend.fulfilled, (state, action) => {
         state.loading = false;
-        state.trends.push(action.payload.trend);
+        state.trends.push(action.payload);
       })
       .addCase(addTrend.rejected, (state, action) => {
         state.loading = false;

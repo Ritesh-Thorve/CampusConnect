@@ -3,7 +3,7 @@ import { Home, Users, Bell, TrendingUp, User, LogIn, LogOut } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { supabaseClient } from '../config/supabaseClient';
-import { useToast } from "@/components/ui/use-toast"; // ✅ Toast hook
+import { useToast } from "@/components/ui/use-toast"; 
 
 const Navbar = () => {
   const location = useLocation();
