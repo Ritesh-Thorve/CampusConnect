@@ -4,32 +4,41 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { supabaseClient } from '../config/supabaseClient';
 import { useToast } from "@/components/ui/use-toast"; 
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '@/redux/features/auth/authSlice';
+import type { RootState } from '../redux/store/store';
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
+  const dispatch = useDispatch();
+
+  // Redux user (email/password login)
+  const authUser = useSelector((state: RootState) => state.auth.user);
+
+  // Supabase user (Google login)
+  const [supabaseUser, setSupabaseUser] = useState<any>(null);
 
   const handleLogout = async () => {
     try {
+      // Supabase logout (Google)
       await supabaseClient.auth.signOut();
-      window.location.reload(); 
-      localStorage.removeItem('cc_token');
-      localStorage.removeItem('cc_user');
-      localStorage.removeItem('cc_expiry');
+
+      // Redux logout (email/password)
+      dispatch(logout());
+
+      // Clear extra storage
       localStorage.removeItem('sb-rqrildgkhqojltpjxhyq-auth-token');
       localStorage.removeItem('sb-access-token');
       localStorage.removeItem('sb-refresh-token');
-
-      setUser(null);
 
       toast({
         title: "Logged out successfully",
         description: "You have been signed out of your account.",
         duration: 3000,
       });
-      
+
       navigate('/login');
     } catch (error) {
       console.error('Error logging out:', error);
@@ -41,21 +50,24 @@ const Navbar = () => {
     }
   };
 
-   useEffect(() => {
-    // Get current session on mount
+  useEffect(() => {
+    // Supabase session check
     supabaseClient.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user || null);
+      setSupabaseUser(data.session?.user || null);
     });
 
-    // Listen for login/logout changes
+    // Listen for Supabase login/logout
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
+      setSupabaseUser(session?.user || null);
     });
 
     return () => {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Unified login state (Google OR email/password)
+  const isLoggedIn = !!authUser || !!supabaseUser;
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -113,9 +125,9 @@ const Navbar = () => {
 
               {/* Auth Buttons */}
               <div className="flex items-center space-x-3 mr-1">
-                {user ? (
+                {isLoggedIn ? (
                   <>
-                    {/* ✅ Profile Button when logged in */}
+                    {/* Profile Button */}
                     <Link to="/profile">
                       <Button
                         variant="ghost"
@@ -127,7 +139,7 @@ const Navbar = () => {
                       </Button>
                     </Link>
 
-                    {/* ✅ Logout Button */}
+                    {/* Logout Button */}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -188,8 +200,8 @@ const Navbar = () => {
             );
           })}
 
-          {/* ✅ Mobile: Profile + Logout if logged in */}
-          {user && (
+          {/* Mobile: Profile + Logout if logged in */}
+          {isLoggedIn && (
             <>
               <Link
                 to="/profile"
