@@ -61,7 +61,7 @@ export async function saveProfile(payload: ProfileData): Promise<ProfileData> {
   if (payload.collegeImgFile) fd.append("collegeImage", payload.collegeImgFile);
   if (payload.collegeIdFile) fd.append("collegeIdCard", payload.collegeIdFile);
 
-  const { data } = await axiosInstance.post("/profile", fd, {
+  const { data } = await axiosInstance.post("/api/profile", fd, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
