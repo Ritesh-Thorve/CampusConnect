@@ -39,17 +39,19 @@ const LoginForm = () => {
   };
 
   const handleGoogleLogin = async () => {
-  try {
-    const { data, error } = await supabaseClient.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: 'https://campus-connect-official.vercel.app/profile' },
-    });
-    if (error) throw error;
-  } catch (err: any) {
-    toast.error(err.message || 'Google login failed');
-  }
-};
+    try {
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/profile`,
+        },
+      });
 
+      if (error) throw error;
+    } catch (err: any) {
+      toast.error(err.message || "Google login failed");
+    }
+  };
 
   return (
     <div className="w-full max-w-lg">
@@ -57,9 +59,9 @@ const LoginForm = () => {
       <div className="text-center mt-5 mb-10">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3">
           Welcome
-          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent ml-3">back</span> 
+          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent ml-3">back</span>
         </h1>
-        
+
         <p className="text-gray-600 text-lg mb-6">
           Sign in to continue your journey
         </p>
