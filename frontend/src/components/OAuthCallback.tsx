@@ -27,7 +27,7 @@ const OAuthCallback = () => {
           provider: "google",
           supabaseId: user.id,
           access_token: session.access_token
-        });
+        }); 
 
         dispatch(setCredentials(res));
         navigate("/profile");
