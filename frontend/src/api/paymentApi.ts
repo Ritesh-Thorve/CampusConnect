@@ -18,16 +18,24 @@ export const verifyPayment = async (data: {
 
 // Get latest payment status only if user is logged in
 export const getPaymentStatus = async () => {
-  const token = localStorage.getItem("token");
+  try {
+    const token = localStorage.getItem("token");
 
-  if (!token) {
-    return null;
+    // Only call backend if user is logged in
+    if (!token) {
+      return { status: "guest" }; // clearer than null
+    }
+
+    const res = await axiosInstance.get("/payment/status", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return res.data; 
+  } catch (err: any) {
+    console.error("Failed to fetch payment status:", err.message);
+    return { status: "unpaid" }; 
   }
-
-  const res = await axiosInstance.get("/payment/status", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  return res.data;
 };
+
+
 
