@@ -24,15 +24,7 @@ const Navbar = () => {
     try {
       // Supabase logout (Google)
       await supabaseClient.auth.signOut();
-
-      // Redux logout (email/password)
       dispatch(logout());
-
-      // Clear extra storage
-      localStorage.removeItem('sb-rqrildgkhqojltpjxhyq-auth-token');
-      localStorage.removeItem('sb-access-token');
-      localStorage.removeItem('sb-refresh-token');
-
       toast({
         title: "Logged out successfully",
         description: "You have been signed out of your account.",
@@ -61,9 +53,7 @@ const Navbar = () => {
       setSupabaseUser(session?.user || null);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   // Unified login state (Google OR email/password)

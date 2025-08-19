@@ -18,11 +18,9 @@ export const verifyPayment = async (data: {
 
 // Get latest payment status only if user is logged in
 export const getPaymentStatus = async () => {
-  const token = localStorage.getItem("token"); // check for token
+  const token = localStorage.getItem("token");
 
   if (!token) {
-    // User is not logged in, skip the API call
-    console.log("User not logged in. Skipping getPaymentStatus API.");
     return null;
   }
 

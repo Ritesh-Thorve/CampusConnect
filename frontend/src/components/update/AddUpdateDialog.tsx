@@ -20,6 +20,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../redux/store/store';
 import { createUpdate, clearError } from '../../redux/features/updates/updatesSlice';
+import toast from 'react-hot-toast';
 
 interface AddUpdateDialogProps {
   open: boolean;
@@ -50,26 +51,32 @@ export const AddUpdateDialog = ({ open, onOpenChange }: AddUpdateDialogProps) =>
 
   // Handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.title || !formData.type || !formData.details) return;
+  e.preventDefault();
+  if (!formData.title || !formData.type || !formData.details) {
+    toast.error("Please fill all required fields");
+    return;
+  }
 
-    try {
-      await dispatch(
-        createUpdate({
-          title: formData.title,
-          type: formData.type,
-          details: formData.details,
-          link: formData.link
-        })
-      ).unwrap();
+  try {
+    await dispatch(
+      createUpdate({
+        title: formData.title,
+        type: formData.type,
+        details: formData.details,
+        link: formData.link
+      })
+    ).unwrap();
 
-      // Reset form and close dialog
-      setFormData({ title: '', type: '', details: '', link: '' });
-      onOpenChange(false);
-    } catch {
-      // Error is handled by Redux slice, optionally can show toast here
-    }
-  };
+    toast.success("Update added successfully!");
+
+    // Reset form and close dialog
+    setFormData({ title: '', type: '', details: '', link: '' });
+    onOpenChange(false);
+  } catch (err: any) {
+    toast.error(err?.message || "Failed to add update");
+  }
+};
+
 
   // Clear error when dialog opens/closes
   useEffect(() => {

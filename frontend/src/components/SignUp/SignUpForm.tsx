@@ -9,6 +9,7 @@ import { useAppDispatch, useAppSelector } from "../../redux/store/hooks";
 import { registerUser } from "../../redux/features/auth/authSlice";
 import toast from "react-hot-toast";
 import { supabaseClient } from "../../config/supabaseClient";
+import { RootState } from "@/redux/store/store";
 
 const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +19,7 @@ const SignUpForm = () => {
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { loading } = useAppSelector((state) => state.auth);
+  const { loading } = useAppSelector((state: RootState) => state.auth);
 
   const [formData, setFormData] = useState({
     fullname: "",
