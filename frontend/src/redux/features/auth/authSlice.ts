@@ -21,23 +21,18 @@ const initialState: AuthState = {
 
 const safeStorage = {
   set: (key: string, value: string) => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(key, value);
-    }
+    if (typeof window !== "undefined") localStorage.setItem(key, value);
   },
   get: (key: string) => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(key);
-    }
+    if (typeof window !== "undefined") return localStorage.getItem(key);
     return null;
   },
   remove: (key: string) => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(key);
-    }
+    if (typeof window !== "undefined") localStorage.removeItem(key);
   },
 };
 
+// Manual signup
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (
@@ -48,39 +43,40 @@ export const registerUser = createAsyncThunk(
       const res = await signUpUser(data);
       return res;
     } catch (e: any) {
-      return rejectWithValue(
-        e?.response?.data?.message || "Registration failed"
-      );
+      return rejectWithValue(e?.response?.data?.message || "Registration failed");
     }
   }
 );
 
-// Google login thunk
-export const loginWithGoogle = createAsyncThunk(
-  "auth/loginWithGoogle",
+// Start Google login → this just triggers redirect
+export const startGoogleLogin = createAsyncThunk(
+  "auth/startGoogleLogin",
   async (_, { rejectWithValue }) => {
     try {
-      // Get session if already logged in (after redirect)
-      const { data: sessionData, error: sessionError } =
-        await supabaseClient.auth.getSession();
-      if (sessionError) throw sessionError;
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/profile`,
+        },
+      });
+      if (error) throw error;
+      return null;
+    } catch (e: any) {
+      return rejectWithValue(e.message || "Google login failed");
+    }
+  }
+);
 
-      if (!sessionData.session) {
-        // If no session, start Google login flow
-        const { error } = await supabaseClient.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: `${window.location.origin}/profile`,
-          },
-        });
-        if (error) throw error;
+// Complete Google login after redirect → sync with backend
+export const completeGoogleLogin = createAsyncThunk(
+  "auth/completeGoogleLogin",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) throw error;
+      if (!data.session) throw new Error("No active Google session");
 
-        // No return needed, Supabase will redirect
-        return null;
-      }
-
-      // Session exists → call backend to sync user
-      const session = sessionData.session;
+      const session = data.session;
       const user = session.user;
 
       const backendRes = await googleAuthUser({
@@ -97,7 +93,6 @@ export const loginWithGoogle = createAsyncThunk(
     }
   }
 );
-
 
 const authSlice = createSlice({
   name: "auth",
@@ -164,6 +159,7 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Register
       .addCase(registerUser.pending, (s) => {
         s.loading = true;
         s.error = null;
@@ -172,7 +168,7 @@ const authSlice = createSlice({
         s.loading = false;
         s.user = {
           ...a.payload.user,
-          provider: a.payload.user.provider || "manual", 
+          provider: a.payload.user.provider || "manual",
         };
         s.token = a.payload.token;
 
@@ -195,14 +191,27 @@ const authSlice = createSlice({
         s.loading = false;
         s.error = (a.payload as string) || "Something went wrong";
       })
-      // 🔹 Google login handling
-      .addCase(loginWithGoogle.pending, (s) => {
+
+      // Start Google login
+      .addCase(startGoogleLogin.pending, (s) => {
         s.loading = true;
         s.error = null;
       })
-      .addCase(loginWithGoogle.fulfilled, (s, a) => {
+      .addCase(startGoogleLogin.fulfilled, (s) => {
         s.loading = false;
+      })
+      .addCase(startGoogleLogin.rejected, (s, a) => {
+        s.loading = false;
+        s.error = (a.payload as string) || "Google login failed";
+      })
 
+      // Complete Google login
+      .addCase(completeGoogleLogin.pending, (s) => {
+        s.loading = true;
+        s.error = null;
+      })
+      .addCase(completeGoogleLogin.fulfilled, (s, a) => {
+        s.loading = false;
         if (a.payload) {
           s.user = {
             ...a.payload.user,
@@ -226,7 +235,7 @@ const authSlice = createSlice({
           }
         }
       })
-      .addCase(loginWithGoogle.rejected, (s, a) => {
+      .addCase(completeGoogleLogin.rejected, (s, a) => {
         s.loading = false;
         s.error = (a.payload as string) || "Google login failed";
       });
