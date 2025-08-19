@@ -65,11 +65,13 @@ model Trend {
 }
 
 model Payment {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  amount     Int
-  razorpayId String
-  status     String
-  createdAt  DateTime @default(now())
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  amount          Int
+  razorpayId      String   @unique   
+  razorpayPaymentId String?          
+  status          String
+  createdAt       DateTime @default(now())
 }
+
