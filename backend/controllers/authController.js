@@ -4,7 +4,7 @@ import { validate } from "../utils/validator.js";
 import { generateToken } from "../utils/jwt.js";
 import Joi from "joi";
 
-// Schemas
+// Joi Schemas
 const signupSchema = Joi.object({
   fullname: Joi.string().required(),
   email: Joi.string().email().required(),
@@ -24,11 +24,11 @@ export const signUp = async (req, res, next) => {
 
     // Create user in Supabase
     const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error || !data.user) {
+    if (error || !data?.user) {
       return res.status(400).json({ error: error?.message || "Signup failed" });
     }
 
-    // Save user in Prisma with supabaseId
+    // Save in Prisma
     const user = await prisma.user.create({
       data: {
         fullname,
@@ -38,10 +38,10 @@ export const signUp = async (req, res, next) => {
       }
     });
 
-    // Generate custom JWT
+    // Generate JWT
     const token = generateToken(user.id);
 
-    res.json({
+    return res.json({
       message: "Signup successful",
       token,
       user
@@ -57,12 +57,13 @@ export const login = async (req, res, next) => {
     validate(loginSchema, req.body);
     const { email, password } = req.body;
 
+    // Authenticate with Supabase
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error || !data.session) {
+    if (error || !data?.session) {
       return res.status(400).json({ error: error?.message || "Login failed" });
     }
 
-    // Check if user exists in Prisma, if not create
+    // Find or create user in Prisma
     let user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       user = await prisma.user.create({
@@ -75,10 +76,9 @@ export const login = async (req, res, next) => {
       });
     }
 
-    // Generate custom JWT
     const token = generateToken(user.id);
 
-    res.json({
+    return res.json({
       message: "Login successful",
       token,
       user
@@ -88,7 +88,7 @@ export const login = async (req, res, next) => {
   }
 };
 
-// Google OAuth Sync
+// Google OAuth
 export const googleAuth = async (req, res, next) => {
   try {
     const schema = Joi.object({
@@ -107,41 +107,22 @@ export const googleAuth = async (req, res, next) => {
     const { email, user_metadata, id: supabaseId } = userData.user;
     const fullname = user_metadata?.full_name || "Google User";
 
-    // Upsert user in Prisma
-    let user = await prisma.user.findUnique({ where: { email } });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email,
-          fullname,
-          provider: "google",
-          supabaseId,
-        },
-      });
-    } else {
-      user = await prisma.user.update({
-        where: { email },
-        data: {
-          fullname,
-          provider: "google",
-          supabaseId,
-        },
-      });
-    }
+    // Upsert into Prisma
+    let user = await prisma.user.upsert({
+      where: { email },
+      update: { fullname, provider: "google", supabaseId },
+      create: { email, fullname, provider: "google", supabaseId }
+    });
 
     const token = generateToken(user.id);
 
-    res.json({
+    return res.json({
       message: "Google OAuth successful",
       user,
-      token,
+      token
     });
-  } catch (error) {
-    console.error("Google Auth Error:", error);
-    res.status(500).json({ error: error.message || "Google login failed" });
+  } catch (err) {
+    console.error("Google Auth Error:", err.message);
+    next(err);
   }
 };
-
-
-

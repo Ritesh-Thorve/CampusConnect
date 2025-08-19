@@ -20,11 +20,29 @@ export const createTrend = async (req, res, next) => {
 
 export const getTrends = async (req, res, next) => {
   try {
-    const trends = await prisma.trend.findMany();
-    res.json(trends);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const [trends, total] = await Promise.all([
+      prisma.trend.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.trend.count(),
+    ]);
+
+    res.json({
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+      trends,
+    });
   } catch (err) {
     next(err);
   }
 };
+
 
 

@@ -103,14 +103,16 @@ export const getMyProfile = async (req, res) => {
 // Get All Profiles (with pagination + filtering)
 export const getAllProfiles = async (req, res) => {
   try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = Number.isInteger(Number(req.query.page)) ? parseInt(req.query.page, 10) : 1;
+    const limit = Number.isInteger(Number(req.query.limit)) ? parseInt(req.query.limit, 10) : 10;
     const skip = (page - 1) * limit;
 
     const { collegeName, graduationYear } = req.query;
 
     const where = {};
-    if (collegeName) where.collegeName = { contains: collegeName, mode: "insensitive" };
+    if (collegeName) {
+      where.collegeName = { contains: collegeName, mode: "insensitive" };
+    }
     if (!isNaN(parseInt(graduationYear, 10))) {
       where.graduationYear = parseInt(graduationYear, 10);
     }
@@ -121,24 +123,25 @@ export const getAllProfiles = async (req, res) => {
         include: {
           user: { select: { fullname: true, email: true } },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: "desc" }, // ✅ Make sure "createdAt" exists in your schema
         skip,
         take: limit,
       }),
       prisma.profile.count({ where }),
     ]);
 
-    res.json({
+    return res.json({
       total,
       page,
       totalPages: Math.ceil(total / limit),
       profiles,
     });
   } catch (error) {
-    console.error("Error in getAllProfiles:", error);
-    res.status(500).json({
+    console.error("Error in getAllProfiles:", error.message, error.meta || "");
+    return res.status(500).json({
       error: "Internal Server Error",
       details: error.message,
     });
   }
 };
+

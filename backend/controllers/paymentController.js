@@ -5,19 +5,29 @@ import crypto from "crypto";
 // Create a Razorpay order
 export const createOrder = async (req, res) => {
   try {
+    if (!req.user?.userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     const userId = req.user.userId;
     const FIXED_AMOUNT = 100; // ₹100
 
     const options = {
-      amount: FIXED_AMOUNT * 100, // in paise
+      amount: FIXED_AMOUNT * 100, // amount in paise
       currency: "INR",
-      receipt: `receipt_${Date.now()}`
+      receipt: `receipt_${Date.now()}_${userId}`
     };
 
     const order = await razorpay.orders.create(options);
 
-    await prisma.payment.create({
-      data: {
+    // Save order in DB (upsert ensures no duplicates for same orderId)
+    await prisma.payment.upsert({
+      where: { razorpayId: order.id },
+      update: {
+        amount: FIXED_AMOUNT,
+        status: "created"
+      },
+      create: {
         userId,
         amount: FIXED_AMOUNT,
         razorpayId: order.id,
@@ -26,6 +36,7 @@ export const createOrder = async (req, res) => {
     });
 
     return res.json({
+      success: true,
       message: "Order created successfully",
       amount: FIXED_AMOUNT,
       order
@@ -36,10 +47,14 @@ export const createOrder = async (req, res) => {
   }
 };
 
-//Verify Razorpay payment signature and update DB
+// Verify Razorpay payment signature and update DB
 export const verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ success: false, message: "Missing payment details" });
+    }
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -48,16 +63,19 @@ export const verifyPayment = async (req, res) => {
       .update(body.toString())
       .digest("hex");
 
-    if (expectedSignature === razorpay_signature) {
-      await prisma.payment.updateMany({
-        where: { razorpayId: razorpay_order_id },
-        data: { status: "paid" }
-      });
-
-      return res.json({ success: true, message: "Payment verified successfully" });
-    } else {
+    if (expectedSignature !== razorpay_signature) {
       return res.status(400).json({ success: false, message: "Invalid signature" });
     }
+
+    await prisma.payment.updateMany({
+      where: { razorpayId: razorpay_order_id },
+      data: {
+        status: "paid",
+        razorpayPaymentId: razorpay_payment_id
+      }
+    });
+
+    return res.json({ success: true, message: "Payment verified successfully" });
   } catch (err) {
     console.error("Payment verification failed:", err.message);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -67,21 +85,20 @@ export const verifyPayment = async (req, res) => {
 // Get user payment status
 export const getPaymentStatus = async (req, res) => {
   try {
+    if (!req.user?.userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     const userId = req.user.userId;
 
     const payment = await prisma.payment.findFirst({
       where: { userId, status: "paid" },
+      orderBy: { createdAt: "desc" }
     });
 
-    if (payment) {
-      return res.json({ status: "paid" });
-    } else {
-      return res.json({ status: "unpaid" });
-    }
+    return res.json({ status: payment ? "paid" : "unpaid" });
   } catch (err) {
     console.error("Error fetching payment status:", err.message);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-

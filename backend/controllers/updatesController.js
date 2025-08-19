@@ -13,6 +13,10 @@ const updateSchema = Joi.object({
 // Create an update (linked to user)
 export const createUpdate = async (req, res, next) => {
   try {
+    if (!req.user?.userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     validate(updateSchema, req.body);
     const userId = req.user.userId;
 
@@ -23,31 +27,42 @@ export const createUpdate = async (req, res, next) => {
       }
     });
 
-    res.status(201).json({ message: 'Update created', update });
+    res.status(201).json({ message: 'Update created successfully', update });
   } catch (err) {
     next(err);
   }
 };
 
-// Get all updates
+// Get all updates (with pagination)
 export const getAllUpdates = async (req, res, next) => {
   try {
-    const updates = await prisma.update.findMany({
-      include: {
-        user: {
-          select: {
-            fullname: true,
-            email: true
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const [updates, total] = await Promise.all([
+      prisma.update.findMany({
+        skip,
+        take: limit,
+        include: {
+          user: {
+            select: {
+              fullname: true,
+              email: true
+            }
           }
+        },
+        orderBy: {
+          createdAt: 'desc'
         }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+      }),
+      prisma.update.count()
+    ]);
 
     res.json({
-      count: updates.length,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
       updates
     });
   } catch (err) {
@@ -55,3 +70,28 @@ export const getAllUpdates = async (req, res, next) => {
   }
 };
 
+// Get a single update by ID
+export const getUpdateById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const update = await prisma.update.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            fullname: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    if (!update) {
+      return res.status(404).json({ error: "Update not found" });
+    }
+
+    res.json(update);
+  } catch (err) {
+    next(err);
+  }
+};
