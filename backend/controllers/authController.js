@@ -1,4 +1,4 @@
-import { supabase } from "../config/supabase.js";
+import { supabase, supabaseAdmin } from "../config/supabase.js";
 import prisma from "../config/db.js";
 import { validate } from "../utils/validator.js";
 import { generateToken } from "../utils/jwt.js";
@@ -89,7 +89,7 @@ export const login = async (req, res, next) => {
 };
 
 // Google OAuth Sync
-export const googleAuth = async (req, res, next) => {
+const googleAuth = async (req, res, next) => {
   try {
     const schema = Joi.object({
       access_token: Joi.string().required(),
@@ -98,26 +98,35 @@ export const googleAuth = async (req, res, next) => {
 
     const { access_token } = req.body;
 
-    // Verify access token with Supabase
-    const { data: userData, error } = await supabase.auth.getUser(access_token);
+    // Verify token with Supabase (service role client required)
+    const { data: userData, error } = await supabaseAdmin.auth.getUser(access_token);
     if (error || !userData?.user) {
       return res.status(401).json({ error: "Invalid or expired access token" });
     }
 
     const { email, user_metadata, id: supabaseId } = userData.user;
-    const fullname = user_metadata.full_name || "Google User";
-    const provider = "google";
+    const fullname = user_metadata?.full_name || "Google User";
 
     // Upsert user in Prisma
     let user = await prisma.user.findUnique({ where: { email } });
+
     if (!user) {
       user = await prisma.user.create({
-        data: { email, fullname, provider, supabaseId },
+        data: {
+          email,
+          fullname,
+          provider: "google",
+          supabaseId,
+        },
       });
     } else {
       user = await prisma.user.update({
         where: { email },
-        data: { fullname, provider, supabaseId },
+        data: {
+          fullname,
+          provider: "google",
+          supabaseId,
+        },
       });
     }
 
@@ -133,5 +142,6 @@ export const googleAuth = async (req, res, next) => {
     res.status(500).json({ error: error.message || "Google login failed" });
   }
 };
+
 
 
