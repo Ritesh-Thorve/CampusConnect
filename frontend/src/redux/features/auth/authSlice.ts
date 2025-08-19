@@ -49,14 +49,14 @@ export const registerUser = createAsyncThunk(
 );
 
 // Start Google login → this just triggers redirect
-export const startGoogleLogin = createAsyncThunk(
-  "auth/startGoogleLogin",
+export const loginWithGoogle = createAsyncThunk(
+  "auth/loginWithGoogle",
   async (_, { rejectWithValue }) => {
     try {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/profile`,
+          redirectTo: `${window.location.origin}/profile`, // redirect back
         },
       });
       if (error) throw error;
@@ -193,14 +193,14 @@ const authSlice = createSlice({
       })
 
       // Start Google login
-      .addCase(startGoogleLogin.pending, (s) => {
+      .addCase(loginWithGoogle.pending, (s) => {
         s.loading = true;
         s.error = null;
       })
-      .addCase(startGoogleLogin.fulfilled, (s) => {
+      .addCase(loginWithGoogle.fulfilled, (s) => {
         s.loading = false;
       })
-      .addCase(startGoogleLogin.rejected, (s, a) => {
+      .addCase(loginWithGoogle.rejected, (s, a) => {
         s.loading = false;
         s.error = (a.payload as string) || "Google login failed";
       })

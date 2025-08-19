@@ -4,7 +4,6 @@ import Footer from "@/components/Footer";
 import ProfileForm from "@/components/profile/ProfileForm";
 import { useAppDispatch, useAppSelector } from "@/redux/store/hooks";
 import { fetchProfile, saveOrUpdateProfile } from "@/redux/features/profile/profileSlice";
-import { loginWithGoogle } from "@/redux/features/auth/authSlice"; 
 import type { ProfileData } from "@/api/profileApi";
 import { mapServerProfileToProfileData } from "@/api/profileApi";
 import toast from "react-hot-toast";
@@ -42,12 +41,7 @@ const Profile = () => {
     email: authEmail,
   });
 
-  // Sync Google session into Redux on mount
-  useEffect(() => {
-    dispatch(loginWithGoogle());
-  }, [dispatch]);
-
-  // Fetch profile on token available
+  // Only fetch profile when token exists
   useEffect(() => {
     if (token) dispatch(fetchProfile());
   }, [dispatch, token]);
