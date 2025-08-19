@@ -89,7 +89,7 @@ export const login = async (req, res, next) => {
 };
 
 // Google OAuth Sync
-const googleAuth = async (req, res, next) => {
+export const googleAuth = async (req, res, next) => {
   try {
     const schema = Joi.object({
       access_token: Joi.string().required(),
