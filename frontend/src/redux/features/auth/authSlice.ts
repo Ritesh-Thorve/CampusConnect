@@ -60,22 +60,27 @@ export const loginWithGoogle = createAsyncThunk(
   "auth/loginWithGoogle",
   async (_, { rejectWithValue }) => {
     try {
-      const { data: existing, error: sessionError } =
+      // Get session if already logged in (after redirect)
+      const { data: sessionData, error: sessionError } =
         await supabaseClient.auth.getSession();
       if (sessionError) throw sessionError;
 
-      if (!existing.session) {
+      if (!sessionData.session) {
+        // If no session, start Google login flow
         const { error } = await supabaseClient.auth.signInWithOAuth({
           provider: "google",
           options: {
-            redirectTo: window.location.origin,
+            redirectTo: `${window.location.origin}/profile`,
           },
         });
         if (error) throw error;
-        return null; 
+
+        // No return needed, Supabase will redirect
+        return null;
       }
 
-      const session = existing.session;
+      // Session exists → call backend to sync user
+      const session = sessionData.session;
       const user = session.user;
 
       const backendRes = await googleAuthUser({
@@ -92,6 +97,7 @@ export const loginWithGoogle = createAsyncThunk(
     }
   }
 );
+
 
 const authSlice = createSlice({
   name: "auth",
