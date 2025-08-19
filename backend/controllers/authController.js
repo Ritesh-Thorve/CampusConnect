@@ -89,13 +89,14 @@ export const login = async (req, res, next) => {
 };
 
 // Google OAuth Sync
-export const googleAuth = async (req, res) => {
+export const googleAuth = async (req, res, next) => {
   try {
-    const { access_token } = req.body;
+    const schema = Joi.object({
+      access_token: Joi.string().required(),
+    });
+    validate(schema, req.body);
 
-    if (!access_token) {
-      return res.status(400).json({ error: "Access token is required" });
-    }
+    const { access_token } = req.body;
 
     // Verify access token with Supabase
     const { data: userData, error } = await supabase.auth.getUser(access_token);
@@ -104,36 +105,32 @@ export const googleAuth = async (req, res) => {
     }
 
     const { email, user_metadata, id: supabaseId } = userData.user;
-
-    // Get metadata from Supabase's Google OAuth
     const fullname = user_metadata.full_name || "Google User";
     const provider = "google";
 
-    // Sync user in Prisma
+    // Upsert user in Prisma
     let user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       user = await prisma.user.create({
-        data: { email, fullname, provider, supabaseId }
+        data: { email, fullname, provider, supabaseId },
       });
     } else {
       user = await prisma.user.update({
         where: { email },
-        data: { fullname, provider, supabaseId }
+        data: { fullname, provider, supabaseId },
       });
     }
 
-    // Generate custom JWT
     const token = generateToken(user.id);
 
-    // Send response
     res.json({
       message: "Google OAuth successful",
       user,
-      token
+      token,
     });
   } catch (error) {
     console.error("Google Auth Error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message || "Google login failed" });
   }
 };
 
