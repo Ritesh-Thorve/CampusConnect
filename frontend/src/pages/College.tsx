@@ -20,7 +20,8 @@ const College = () => {
   const [page, setPage] = useState(1);
   const limit = 6;
 
-  const { hasPaid, loading: paymentLoading } = usePaymentStatus(); 
+  // Used payment hook
+  const { hasPaid, loading: paymentLoading } = usePaymentStatus();
 
   useEffect(() => {
     dispatch(fetchAllProfiles({ page, limit }));
@@ -53,7 +54,11 @@ const College = () => {
         <div className="hidden md:block"><Navbar /></div>
         <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 py-3 px-4">
           <div className="flex items-center justify-center">
-            <img src="/compus-connect_logo.png" alt="Campus Connect" className="h-6 w-6 mr-2 object-cover" />
+            <img
+              src="/compus-connect_logo.png"
+              alt="Campus Connect"
+              className="h-6 w-6 mr-2 object-cover"
+            />
             <span className="text-sm font-semibold text-gray-800">Campus Connect</span>
           </div>
         </div>
@@ -76,7 +81,11 @@ const College = () => {
       <div className="hidden md:block"><Navbar /></div>
       <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 py-3 px-4">
         <div className="flex items-center justify-center">
-          <img src="/compus-connect_logo.png" alt="Campus Connect" className="h-6 w-6 mr-2 object-cover" />
+          <img
+            src="/compus-connect_logo.png"
+            alt="Campus Connect"
+            className="h-6 w-6 mr-2 object-cover"
+          />
           <span className="text-sm font-semibold text-gray-800">Campus Connect</span>
         </div>
       </div>
@@ -86,7 +95,10 @@ const College = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
           <div className="text-center mb-10 md:mb-16">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6">
-              College <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Community</span>
+              College{" "}
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Community
+              </span>
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Connect with fellow students from universities around the world.
@@ -133,8 +145,8 @@ const College = () => {
       <div className="hidden md:block"><Footer /></div>
       <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
 
-      {/* Payment Prompt only if user hasn't paid */}
-      {status === "unpaid" && <PaymentPrompt onClose={() => {}} />}
+      {/* Payment Prompt only if unpaid */}
+      {!hasPaid && <PaymentPrompt onClose={() => {}} />}
     </div>
   );
 };

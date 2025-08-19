@@ -1,42 +1,53 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getPaymentStatus } from "@/api/paymentApi";
+import { getPaymentStatus } from "../../../api/paymentApi";
+
+interface PaymentState {
+  hasPaid: boolean;
+  loading: boolean;
+  error: string | null;
+}
+
+const initialState: PaymentState = {
+  hasPaid: false,  // default unpaid
+  loading: false,
+  error: null,
+};
 
 // Async thunk to fetch payment status
-export const fetchPaymentStatus = createAsyncThunk(
+export const fetchPaymentStatus = createAsyncThunk<boolean>(
   "payment/fetchStatus",
-  async () => {
-    const res = await getPaymentStatus();
-    return res.status; // "paid" | "unpaid" | "guest"
+  async (_, { rejectWithValue }) => {
+    try {
+      const result = await getPaymentStatus();
+      return result.hasPaid; // always boolean
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Failed to fetch payment status");
+    }
   }
 );
 
 const paymentSlice = createSlice({
   name: "payment",
-  initialState: {
-    hasPaid: false,
-    loading: false,
-    status: "guest" as "guest" | "paid" | "unpaid",
-  },
+  initialState,
   reducers: {
     markPaid: (state) => {
-      state.hasPaid = true;
-      state.status = "paid";   
+      state.hasPaid = true; // manually mark paid after Razorpay success
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchPaymentStatus.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchPaymentStatus.fulfilled, (state, action) => {
+        state.hasPaid = action.payload;
         state.loading = false;
-        state.status = action.payload;
-        state.hasPaid = action.payload === "paid";
       })
-      .addCase(fetchPaymentStatus.rejected, (state) => {
+      .addCase(fetchPaymentStatus.rejected, (state, action) => {
+        state.hasPaid = false; // fallback to unpaid
         state.loading = false;
-        state.status = "unpaid"; // fallback
-        state.hasPaid = false;
+        state.error = action.payload as string;
       });
   },
 });
