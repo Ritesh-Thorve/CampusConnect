@@ -15,34 +15,34 @@ export const createOrder = async (req, res) => {
     const options = {
       amount: FIXED_AMOUNT * 100, // amount in paise
       currency: "INR",
-      receipt: `receipt_${Date.now()}_${userId}`
+      receipt: `receipt_${Date.now()}_${userId}`,
     };
 
     const order = await razorpay.orders.create(options);
 
-    // Save order in DB (upsert ensures no duplicates for same orderId)
+    // Save order in DB (requires razorpayId @unique in Prisma)
     await prisma.payment.upsert({
       where: { razorpayId: order.id },
       update: {
         amount: FIXED_AMOUNT,
-        status: "created"
+        status: "created",
       },
       create: {
         userId,
         amount: FIXED_AMOUNT,
         razorpayId: order.id,
-        status: "created"
-      }
+        status: "created",
+      },
     });
 
     return res.json({
       success: true,
       message: "Order created successfully",
       amount: FIXED_AMOUNT,
-      order
+      order,
     });
   } catch (err) {
-    console.error("Error creating order:", err.message);
+    console.error("Error creating order:", err); // full error for debugging
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -71,13 +71,13 @@ export const verifyPayment = async (req, res) => {
       where: { razorpayId: razorpay_order_id },
       data: {
         status: "paid",
-        razorpayPaymentId: razorpay_payment_id
-      }
+        razorpayPaymentId: razorpay_payment_id,
+      },
     });
 
     return res.json({ success: true, message: "Payment verified successfully" });
   } catch (err) {
-    console.error("Payment verification failed:", err.message);
+    console.error("Payment verification failed:", err);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -93,12 +93,12 @@ export const getPaymentStatus = async (req, res) => {
 
     const payment = await prisma.payment.findFirst({
       where: { userId, status: "paid" },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
     });
 
     return res.json({ status: payment ? "paid" : "unpaid" });
   } catch (err) {
-    console.error("Error fetching payment status:", err.message);
+    console.error("Error fetching payment status:", err);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
