@@ -1,32 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  id         String     @id @default(cuid())
-  supabaseId String?    @unique
-  fullname   String
-  email      String     @unique
-  password   String?
+  id         String    @id @default(cuid())
+  email      String    @unique
   googleId   String?
+  createdAt  DateTime  @default(now())
+  fullname   String
+  password   String?
   provider   String
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  profile    Profile?
-  updates    Update[]
-  trends     Trend[]
+  updatedAt  DateTime  @updatedAt
+  supabaseId String?   @unique
+  isPremium  Boolean   @default(false)
   payments   Payment[]
+  profile    Profile?
+  trends     Trend[]
+  updates    Update[]
 }
 
 model Profile {
   id             String   @id @default(uuid())
   userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id])
   fullName       String
   profileImg     String?
   collegeName    String
@@ -41,6 +41,7 @@ model Profile {
   github         String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id])
 }
 
 model Update {
@@ -49,9 +50,9 @@ model Update {
   type      String
   details   String
   link      String?
+  createdAt DateTime @default(now())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
 }
 
 model Trend {
@@ -59,19 +60,17 @@ model Trend {
   title       String
   description String
   tag         String
+  createdAt   DateTime @default(now())
   userId      String?
   user        User?    @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
 }
 
 model Payment {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
-  amount          Int
-  razorpayId      String   @unique   
-  razorpayPaymentId String?          
-  status          String
-  createdAt       DateTime @default(now())
+  id         String   @id @default(uuid())
+  userId     String
+  amount     Int
+  razorpayId String
+  status     String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
 }
-
