@@ -16,13 +16,13 @@ export interface Update {
 
 // Create a new update
 export const createUpdateApi = async (data: Omit<Update, 'id' | 'userId' | 'createdAt'>) => {
-  const response = await axios.post('/api/updates/create', data);
+  const response = await axios.post('/updates/create', data);
   return response.data.update as Update;
 };
 
 // Get all updates
 export const getAllUpdatesApi = async () => {
-  const response = await axios.get('/api/updates');
+  const response = await axios.get('/updates');
   return response.data.updates as Update[];
 };
 

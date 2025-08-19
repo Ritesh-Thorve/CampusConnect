@@ -2,7 +2,7 @@ import { axiosInstance } from "./axiosConfig";
 
 // Create Razorpay order
 export const createOrder = async () => {
-  const res = await axiosInstance.post("/api/payment/create-order");
+  const res = await axiosInstance.post("/payment/create-order");
   return res.data;
 };
 
@@ -12,7 +12,7 @@ export const verifyPayment = async (data: {
   razorpay_payment_id: string;
   razorpay_signature: string;
 }) => {
-  const res = await axiosInstance.post("/api/payment/verify", data);
+  const res = await axiosInstance.post("/payment/verify", data);
   return res.data;
 };
 
@@ -24,7 +24,7 @@ export const getPaymentStatus = async () => {
     return null;
   }
 
-  const res = await axiosInstance.get("/api/payment/status", {
+  const res = await axiosInstance.get("/payment/status", {
     headers: { Authorization: `Bearer ${token}` },
   });
 

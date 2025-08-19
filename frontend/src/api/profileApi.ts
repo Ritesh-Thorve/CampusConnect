@@ -40,7 +40,7 @@ export const mapServerProfileToProfileData = (data: any): ProfileData => ({
 
 // GET profile (single route version)
 export async function getProfile(): Promise<ProfileData> {
-  const res = await axiosInstance.get("/api/profile");
+  const res = await axiosInstance.get("/profile");
   return mapServerProfileToProfileData(res.data.profile || res.data);
 }
 
@@ -61,7 +61,7 @@ export async function saveProfile(payload: ProfileData): Promise<ProfileData> {
   if (payload.collegeImgFile) fd.append("collegeImage", payload.collegeImgFile);
   if (payload.collegeIdFile) fd.append("collegeIdCard", payload.collegeIdFile);
 
-  const { data } = await axiosInstance.post("/api/profile", fd, {
+  const { data } = await axiosInstance.post("/profile", fd, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
@@ -84,7 +84,7 @@ export async function getAllProfiles(
   if (collegeName) params.collegeName = collegeName;
   if (graduationYear) params.graduationYear = graduationYear;
 
-  const res = await axiosInstance.get("/api/students/profiles", { params });
+  const res = await axiosInstance.get("/students/profiles", { params });
 
   return {
     total: res.data.total,

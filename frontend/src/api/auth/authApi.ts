@@ -11,7 +11,7 @@ const extractErrorMsg = (error: any, fallback: string) =>
 // Register new user
 export const signUpUser = async (data: SignUpData): Promise<AuthResponse> => {
   try {
-    const res = await axiosInstance.post("/api/auth/signup", data);
+    const res = await axiosInstance.post("/auth/signup", data);
     return res.data;
   } catch (error: any) {
     throw new Error(extractErrorMsg(error, "Registration failed"));
@@ -21,7 +21,7 @@ export const signUpUser = async (data: SignUpData): Promise<AuthResponse> => {
 // Login with email/password
 export const loginUser = async (email: string, password: string) => {
   try {
-    const res = await axiosInstance.post("/api/auth/login", { email, password });
+    const res = await axiosInstance.post("/auth/login", { email, password });
     return res.data;
   } catch (error: any) {
     console.error("loginUser error:", error?.response?.data || error);
@@ -46,7 +46,7 @@ export const googleAuthUser = async (payload: {
     access_token: payload.access_token,
   };
 
-  const { data } = await axiosInstance.post("/api/auth/google", backendPayload, {
+  const { data } = await axiosInstance.post("/auth/google", backendPayload, {
     headers: { "Content-Type": "application/json" },
   });
   return data;
