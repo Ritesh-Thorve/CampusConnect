@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Update, createUpdateApi, getAllUpdatesApi, getUserUpdatesApi } from '../../../api/updatesApi';
+import { Update, createUpdateApi, getAllUpdatesApi} from '../../../api/updatesApi';
 
 // Async thunks
 export const createUpdate = createAsyncThunk('updates/create', async (data: Omit<Update, 'id' | 'userId' | 'createdAt'>) => {
@@ -8,10 +8,6 @@ export const createUpdate = createAsyncThunk('updates/create', async (data: Omit
 
 export const fetchAllUpdates = createAsyncThunk('updates/fetchAll', async () => {
   return await getAllUpdatesApi();
-});
-
-export const fetchUserUpdates = createAsyncThunk('updates/fetchUser', async () => {
-  return await getUserUpdatesApi();
 });
 
 // Slice state type
@@ -65,20 +61,6 @@ const updatesSlice = createSlice({
     builder.addCase(fetchAllUpdates.rejected, (state, action) => {
       state.loading = false;
       state.error = action.error.message || 'Failed to fetch updates';
-    });
-
-    // Fetch user updates
-    builder.addCase(fetchUserUpdates.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchUserUpdates.fulfilled, (state, action: PayloadAction<Update[]>) => {
-      state.loading = false;
-      state.userUpdates = action.payload;
-    });
-    builder.addCase(fetchUserUpdates.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.error.message || 'Failed to fetch your updates';
     });
   },
 });
