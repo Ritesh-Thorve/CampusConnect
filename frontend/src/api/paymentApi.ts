@@ -1,22 +1,29 @@
 import { axiosInstance } from "./axiosConfig";
 
-// Create Razorpay order
 export const createOrder = async () => {
-  const res = await axiosInstance.post("/payment/create-order");
-  return res.data;
+  try {
+    const res = await axiosInstance.post("/payment/create-order");
+    return res.data;
+  } catch (err: any) {
+    console.error("Payment initiation failed:", err.response?.data || err.message);
+    throw err;
+  }
 };
 
-// Verify payment after success
 export const verifyPayment = async (data: {
   razorpay_order_id: string;
   razorpay_payment_id: string;
   razorpay_signature: string;
 }) => {
-  const res = await axiosInstance.post("/payment/verify", data);
-  return res.data;
+  try {
+    const res = await axiosInstance.post("/payment/verify", data);
+    return res.data;
+  } catch (err: any) {
+    console.error("Payment verification failed:", err.response?.data || err.message);
+    throw err;
+  }
 };
 
-// Get latest payment status only if user is logged in
 export const getPaymentStatus = async (): Promise<{ hasPaid: boolean }> => {
   try {
     const token = localStorage.getItem("token");
@@ -31,10 +38,7 @@ export const getPaymentStatus = async (): Promise<{ hasPaid: boolean }> => {
     // Normalize API response → always boolean
     return { hasPaid: res.data.status === "paid" };
   } catch (err: any) {
-    console.error("Failed to fetch payment status:", err.message);
-    return { hasPaid: false }; 
+    console.error("Failed to fetch payment status:", err.response?.data || err.message);
+    return { hasPaid: false };
   }
 };
-
-
-
