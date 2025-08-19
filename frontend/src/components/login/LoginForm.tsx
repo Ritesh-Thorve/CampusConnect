@@ -67,7 +67,7 @@ const LoginForm = () => {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/oauth-callback`,
+          redirectTo: `${window.location.origin}/profile`,
         },
       });
       if (error) throw error;
