@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { X, Crown, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useAppDispatch } from "@/redux/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/store/hooks";
 import { markPaid } from "@/redux/features/payment/paymentSlice";
 import { createOrder, verifyPayment } from "@/api/paymentApi";
+import toast from "react-hot-toast";
 
 const PaymentPrompt = ({ onClose }) => {
   const [isVisible, setIsVisible] = useState(true);
   const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -18,11 +20,17 @@ const PaymentPrompt = ({ onClose }) => {
   if (!isVisible) return null;
 
   const handlePayment = async () => {
+    if (!user) {
+      toast.error("You need to login first!");
+      return;
+    }
+
     try {
+      toast.loading("Initializing payment...", { id: "payment" });
+
       // Create order from backend
       const { order } = await createOrder();
 
-      // Open Razorpay checkout
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: order.amount,
@@ -32,27 +40,29 @@ const PaymentPrompt = ({ onClose }) => {
         order_id: order.id,
         handler: async (response) => {
           try {
-            // Verify payment with backend
             await verifyPayment({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
 
-            // Update Redux and hide modal
             dispatch(markPaid());
+            toast.success("Payment successful!");
             handleClose();
           } catch (err) {
             console.error("Payment verification failed:", err);
+            toast.error("Payment verification failed. Please try again.");
           }
         },
         theme: { color: "#6D28D9" },
       };
 
+      toast.dismiss("payment");
       const razor = new window.Razorpay(options);
       razor.open();
     } catch (err) {
       console.error("Payment initiation failed:", err);
+      toast.error("Payment failed to initiate. Please try again.");
     }
   };
 
