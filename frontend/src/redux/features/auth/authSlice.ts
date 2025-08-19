@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import type { AuthResponse, User } from "./types";
-import { signUpUser } from "@/api/auth/authApi";
+import { signUpUser, googleAuthUser } from "@/api/auth/authApi";
+import { supabaseClient } from "../../../config/supabaseClient";
 
 interface AuthState {
   user: User | null;
   token: string | null;
-  expiry: number | null; 
+  expiry: number | null;
   loading: boolean;
   error: string | null;
 }
@@ -54,12 +55,53 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+// Google login thunk
+export const loginWithGoogle = createAsyncThunk(
+  "auth/loginWithGoogle",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data: existing, error: sessionError } =
+        await supabaseClient.auth.getSession();
+      if (sessionError) throw sessionError;
+
+      if (!existing.session) {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: window.location.origin,
+          },
+        });
+        if (error) throw error;
+        return null; 
+      }
+
+      const session = existing.session;
+      const user = session.user;
+
+      const backendRes = await googleAuthUser({
+        fullname: user.user_metadata.full_name || "",
+        email: user.email!,
+        provider: "google",
+        supabaseId: user.id,
+        access_token: session.access_token,
+      });
+
+      return backendRes as AuthResponse;
+    } catch (e: any) {
+      return rejectWithValue(e.message || "Google login failed");
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
     setCredentials: (state, action: PayloadAction<AuthResponse>) => {
-      state.user = action.payload.user;
+      state.user = {
+        ...action.payload.user,
+        provider: action.payload.user.provider || "manual",
+      };
       state.token = action.payload.token;
       state.error = null;
 
@@ -71,7 +113,7 @@ const authSlice = createSlice({
       }
 
       safeStorage.set("cc_token", action.payload.token);
-      safeStorage.set("cc_user", JSON.stringify(action.payload.user));
+      safeStorage.set("cc_user", JSON.stringify(state.user));
       if (state.expiry) {
         safeStorage.set("cc_expiry", state.expiry.toString());
       } else {
@@ -87,7 +129,6 @@ const authSlice = createSlice({
         const expiry = expiryRaw ? Number(expiryRaw) : null;
 
         if (expiry && Date.now() > expiry) {
-          console.warn("Token expired during hydrateFromStorage");
           safeStorage.remove("cc_token");
           safeStorage.remove("cc_user");
           safeStorage.remove("cc_expiry");
@@ -100,8 +141,7 @@ const authSlice = createSlice({
         state.token = token || null;
         state.user = userRaw ? JSON.parse(userRaw) : null;
         state.expiry = expiry;
-      } catch (err) {
-        console.error("Failed to hydrate auth state", err);
+      } catch {
         state.user = null;
         state.token = null;
         state.expiry = null;
@@ -124,7 +164,10 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (s, a) => {
         s.loading = false;
-        s.user = a.payload.user;
+        s.user = {
+          ...a.payload.user,
+          provider: a.payload.user.provider || "manual", 
+        };
         s.token = a.payload.token;
 
         try {
@@ -135,7 +178,7 @@ const authSlice = createSlice({
         }
 
         safeStorage.set("cc_token", a.payload.token);
-        safeStorage.set("cc_user", JSON.stringify(a.payload.user));
+        safeStorage.set("cc_user", JSON.stringify(s.user));
         if (s.expiry) {
           safeStorage.set("cc_expiry", s.expiry.toString());
         } else {
@@ -145,6 +188,41 @@ const authSlice = createSlice({
       .addCase(registerUser.rejected, (s, a) => {
         s.loading = false;
         s.error = (a.payload as string) || "Something went wrong";
+      })
+      // 🔹 Google login handling
+      .addCase(loginWithGoogle.pending, (s) => {
+        s.loading = true;
+        s.error = null;
+      })
+      .addCase(loginWithGoogle.fulfilled, (s, a) => {
+        s.loading = false;
+
+        if (a.payload) {
+          s.user = {
+            ...a.payload.user,
+            provider: a.payload.user.provider || "google",
+          };
+          s.token = a.payload.token;
+
+          try {
+            const payload = JSON.parse(atob(a.payload.token.split(".")[1]));
+            s.expiry = payload.exp ? payload.exp * 1000 : null;
+          } catch {
+            s.expiry = null;
+          }
+
+          safeStorage.set("cc_token", a.payload.token);
+          safeStorage.set("cc_user", JSON.stringify(s.user));
+          if (s.expiry) {
+            safeStorage.set("cc_expiry", s.expiry.toString());
+          } else {
+            safeStorage.remove("cc_expiry");
+          }
+        }
+      })
+      .addCase(loginWithGoogle.rejected, (s, a) => {
+        s.loading = false;
+        s.error = (a.payload as string) || "Google login failed";
       });
   },
 });

@@ -71,24 +71,21 @@ const SignUpForm = () => {
   };
 
   const handleGoogleSignUp = async () => {
-    setGoogleLoading(true);
-    try {
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/profile`,
-        },
-      });
-
-      if (error) throw error;
-    } catch (err: any) {
-      toast.error(err.message || "Google sign-in failed");
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
-
-
+  setGoogleLoading(true);
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+    if (error) throw error;
+  } catch (err: any) {
+    toast.error(err.message || "Google sign-in failed");
+  } finally {
+    setGoogleLoading(false);
+  }
+};
 
   return (
     <div className="w-full max-w-lg">

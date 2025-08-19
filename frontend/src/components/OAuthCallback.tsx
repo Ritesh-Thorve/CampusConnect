@@ -26,7 +26,7 @@ const OAuthCallback = () => {
           email: user.email || "",
           provider: "google",
           supabaseId: user.id,
-          accessToken: session.access_token
+          access_token: session.access_token
         });
 
         dispatch(setCredentials(res));
