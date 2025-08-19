@@ -40,7 +40,7 @@ export const mapServerProfileToProfileData = (data: any): ProfileData => ({
 
 // GET profile (single route version)
 export async function getProfile(): Promise<ProfileData> {
-  const res = await axiosInstance.get("/profile");
+  const res = await axiosInstance.get("/api/profile");
   return mapServerProfileToProfileData(res.data.profile || res.data);
 }
 
@@ -84,7 +84,7 @@ export async function getAllProfiles(
   if (collegeName) params.collegeName = collegeName;
   if (graduationYear) params.graduationYear = graduationYear;
 
-  const res = await axiosInstance.get("/students/profiles", { params });
+  const res = await axiosInstance.get("/api/students/profiles", { params });
 
   return {
     total: res.data.total,
