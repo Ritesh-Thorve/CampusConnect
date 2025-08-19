@@ -1,61 +1,45 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getPaymentStatus } from "@/api/paymentApi";
 
-interface PaymentState {
-  hasPaid: boolean | null; // null = unknown
-  loading: boolean;
-  error: string | null;
-}
-
-const initialState: PaymentState = {
-  hasPaid: null,
-  loading: false,
-  error: null,
-};
-
 // Async thunk to fetch payment status
 export const fetchPaymentStatus = createAsyncThunk(
   "payment/fetchStatus",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await getPaymentStatus();
-      return res?.status === "paid";
-    } catch (err: any) {
-      return rejectWithValue(err.message || "Error fetching payment status");
-    }
+  async () => {
+    const res = await getPaymentStatus();
+    return res.status; // "paid" | "unpaid" | "guest"
   }
 );
 
 const paymentSlice = createSlice({
   name: "payment",
-  initialState,
+  initialState: {
+    hasPaid: false,
+    loading: false,
+    status: "guest" as "guest" | "paid" | "unpaid",
+  },
   reducers: {
     markPaid: (state) => {
       state.hasPaid = true;
-    },
-    resetPayment: (state) => {
-      state.hasPaid = null;
-      state.loading = false;
-      state.error = null;
+      state.status = "paid";   
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchPaymentStatus.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(fetchPaymentStatus.fulfilled, (state, action) => {
-        state.hasPaid = action.payload;
         state.loading = false;
+        state.status = action.payload;
+        state.hasPaid = action.payload === "paid";
       })
-      .addCase(fetchPaymentStatus.rejected, (state, action) => {
+      .addCase(fetchPaymentStatus.rejected, (state) => {
         state.loading = false;
+        state.status = "unpaid"; // fallback
         state.hasPaid = false;
-        state.error = action.payload as string;
       });
   },
 });
 
-export const { markPaid, resetPayment } = paymentSlice.actions;
+export const { markPaid } = paymentSlice.actions;
 export default paymentSlice.reducer;

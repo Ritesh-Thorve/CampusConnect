@@ -134,7 +134,7 @@ const College = () => {
       <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
 
       {/* Payment Prompt only if user hasn't paid */}
-      {!paymentLoading && hasPaid === false && <PaymentPrompt onClose={() => {}} />}
+      {status === "unpaid" && <PaymentPrompt onClose={() => {}} />}
     </div>
   );
 };
