@@ -18,7 +18,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  // 🔹 On mount, check if Supabase already has a session (after redirect from Google)
+  // On mount, check if Supabase already has a session (after redirect from Google)
   useEffect(() => {
     const getSession = async () => {
       const { data, error } = await supabaseClient.auth.getSession();
@@ -67,7 +67,7 @@ const LoginForm = () => {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/oauth-callback`,
         },
       });
       if (error) throw error;

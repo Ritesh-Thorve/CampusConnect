@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabaseClient } from '../config/supabaseClient';
-import { googleAuthUser } from '@/api/auth/authApi';
-import { useAppDispatch } from '@/redux/store/hooks';
-import { setCredentials } from '@/redux/features/auth/authSlice';
-import toast from 'react-hot-toast';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabaseClient } from "../config/supabaseClient";
+import { googleAuthUser } from "@/api/auth/authApi";
+import { useAppDispatch } from "@/redux/store/hooks";
+import { setCredentials } from "@/redux/features/auth/authSlice";
+import toast from "react-hot-toast";
 
 const OAuthCallback = () => {
   const dispatch = useAppDispatch();
@@ -13,7 +13,11 @@ const OAuthCallback = () => {
   useEffect(() => {
     const handleOAuth = async () => {
       try {
-        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        const {
+          data: { session },
+          error,
+        } = await supabaseClient.auth.getSession();
+
         if (error || !session) {
           toast.error("Google authentication failed");
           return navigate("/signup");
@@ -22,17 +26,19 @@ const OAuthCallback = () => {
         const user = session.user;
 
         const res = await googleAuthUser({
-          fullname: user.user_metadata.full_name || user.user_metadata.name || "",
+          fullname:
+            user.user_metadata.full_name || user.user_metadata.name || "",
           email: user.email || "",
           provider: "google",
           supabaseId: user.id,
-          access_token: session.access_token
-        }); 
+          access_token: session.access_token, 
+        });
 
-        dispatch(setCredentials(res));
-        navigate("/profile");
         toast.success("Google Login successful");
-        window.localStorage.setItem("accessToken", res.accessToken);
+        dispatch(setCredentials({ ...res, accessToken: res.access_token }));
+        window.localStorage.setItem("accessToken", res.access_token);
+
+        navigate("/profile");
       } catch (err: any) {
         toast.error(err.message || "Google OAuth failed");
       }
