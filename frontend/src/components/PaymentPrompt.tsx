@@ -6,18 +6,21 @@ import { useAppDispatch, useAppSelector } from "@/redux/store/hooks";
 import { markPaid } from "@/redux/features/payment/paymentSlice";
 import { createOrder, verifyPayment } from "@/api/paymentApi";
 import toast from "react-hot-toast";
+import { usePaymentStatus } from "@/hooks/usePaymentStatus"; 
 
 const PaymentPrompt = ({ onClose }) => {
   const [isVisible, setIsVisible] = useState(true);
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
+  const { hasPaid, loading } = usePaymentStatus(); 
 
   const handleClose = () => {
     setIsVisible(false);
     setTimeout(onClose, 300);
   };
 
-  if (!isVisible) return null;
+  // Hide modal if already paid or while still checking
+  if (!isVisible || loading || hasPaid) return null;
 
   const handlePayment = async () => {
     if (!user) {
@@ -46,7 +49,7 @@ const PaymentPrompt = ({ onClose }) => {
               razorpay_signature: response.razorpay_signature,
             });
 
-            dispatch(markPaid());
+            dispatch(markPaid()); //instantly update state
             toast.success("Payment successful!");
             handleClose();
           } catch (err) {

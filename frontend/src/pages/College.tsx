@@ -18,6 +18,7 @@ const College = () => {
   );
 
   const [page, setPage] = useState(1);
+  const [showPaymentPrompt, setShowPaymentPrompt] = useState(true); //local state to hide modal
   const limit = 6;
 
   // Used payment hook
@@ -146,7 +147,9 @@ const College = () => {
       <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
 
       {/* Payment Prompt only if unpaid */}
-      {!hasPaid && <PaymentPrompt onClose={() => {}} />}
+      {!hasPaid && showPaymentPrompt && (
+        <PaymentPrompt onClose={() => setShowPaymentPrompt(false)} />
+      )}
     </div>
   );
 };

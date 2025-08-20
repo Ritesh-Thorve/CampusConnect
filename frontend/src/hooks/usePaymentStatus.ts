@@ -4,11 +4,13 @@ import { fetchPaymentStatus } from "@/redux/features/payment/paymentSlice";
 
 export const usePaymentStatus = () => {
   const dispatch = useAppDispatch();
-  const { hasPaid, loading, error } = useAppSelector((s) => s.payment);
+  const { hasPaid, status, amount, createdAt, loading, error } = useAppSelector(
+    (s) => s.payment
+  );
 
   useEffect(() => {
     dispatch(fetchPaymentStatus());
   }, [dispatch]);
 
-  return { hasPaid, loading, error };
+  return { hasPaid, status, amount, createdAt, loading, error };
 };
