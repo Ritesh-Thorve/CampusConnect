@@ -2,7 +2,7 @@ import { razorpay } from "../utils/razorpay.js";
 import prisma from "../config/db.js";
 import crypto from "crypto";
 
-// Create Razorpay Order
+// Create Order
 export const createOrder = async (req, res) => {
   try {
     if (!req.user?.userId) {
@@ -12,6 +12,19 @@ export const createOrder = async (req, res) => {
     const userId = req.user.userId;
     const FIXED_AMOUNT = 100; // ₹100
 
+    // Check if user already has a paid payment
+    const existingPayment = await prisma.payment.findFirst({
+      where: { userId, status: "paid" },
+    });
+
+    if (existingPayment) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already completed the payment.",
+      });
+    }
+
+    // Create new Razorpay order
     const options = {
       amount: FIXED_AMOUNT * 100, // amount in paise
       currency: "INR",
@@ -20,14 +33,9 @@ export const createOrder = async (req, res) => {
 
     const order = await razorpay.orders.create(options);
 
-    // Save order in DB (upsert works because razorpayId is unique now)
-    await prisma.payment.upsert({
-      where: { razorpayId: order.id },
-      update: {
-        amount: FIXED_AMOUNT,
-        status: "created",
-      },
-      create: {
+    // Save new order in DB
+    await prisma.payment.create({
+      data: {
         userId,
         amount: FIXED_AMOUNT,
         razorpayId: order.id,
@@ -71,7 +79,6 @@ export const verifyPayment = async (req, res) => {
       where: { razorpayId: razorpay_order_id },
       data: {
         status: "paid",
-        razorpayPaymentId: razorpay_payment_id,
       },
     });
 
@@ -91,14 +98,24 @@ export const getPaymentStatus = async (req, res) => {
 
     const userId = req.user.userId;
 
+    // Get the latest payment for this user
     const payment = await prisma.payment.findFirst({
-      where: { userId, status: "paid" },
+      where: { userId },
       orderBy: { createdAt: "desc" },
     });
 
-    return res.json({ status: payment ? "paid" : "unpaid" });
+    if (!payment) {
+      return res.json({ status: "unpaid" });
+    }
+
+    return res.json({
+      status: payment.status,     // "created" | "paid"
+      amount: payment.amount,
+      createdAt: payment.createdAt,
+    });
   } catch (err) {
     console.error("Error fetching payment status:", err.message);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
