@@ -123,7 +123,7 @@ export const getAllProfiles = async (req, res) => {
         include: {
           user: { select: { fullname: true, email: true } },
         },
-        orderBy: { createdAt: "desc" }, // ✅ Make sure "createdAt" exists in your schema
+        orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),

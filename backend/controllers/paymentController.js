@@ -24,7 +24,7 @@ export const createOrder = async (req, res) => {
       });
     }
 
-    // ✅ Shortened receipt (must be < 40 chars)
+    // Shortened receipt (must be < 40 chars)
     const receiptId = `rcpt_${Date.now()}_${userId.slice(0, 6)}`;
 
     // Create new Razorpay order
@@ -53,7 +53,7 @@ export const createOrder = async (req, res) => {
       order,
     });
   } catch (err) {
-    console.error("❌ Error creating order:", err.response?.data || err.message);
+    console.error("Error creating order:", err.response?.data || err.message);
     return res.status(500).json({
       error: "Razorpay API Error",
       details: err.response?.data || err.message,
@@ -88,7 +88,7 @@ export const verifyPayment = async (req, res) => {
 
     return res.json({ success: true, message: "Payment verified successfully" });
   } catch (err) {
-    console.error("❌ Payment verification failed:", err.message);
+    console.error("Payment verification failed:", err.message);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -118,7 +118,7 @@ export const getPaymentStatus = async (req, res) => {
       createdAt: payment.createdAt,
     });
   } catch (err) {
-    console.error("❌ Error fetching payment status:", err.message);
+    console.error("Error fetching payment status:", err.message);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
