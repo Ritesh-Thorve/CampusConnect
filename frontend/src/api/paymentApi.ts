@@ -7,7 +7,7 @@ export const createOrder = async () => {
     return res.data;
   } catch (err: any) {
     console.error("Payment initiation failed:", err.response?.data || err.message);
-    throw err;
+    throw err; 
   }
 };
 
@@ -22,7 +22,7 @@ export const verifyPayment = async (data: {
     return res.data;
   } catch (err: any) {
     console.error("Payment verification failed:", err.response?.data || err.message);
-    throw err;
+    throw err; 
   }
 };
 
@@ -53,6 +53,6 @@ export const getPaymentStatus = async (): Promise<{
     };
   } catch (err: any) {
     console.error("Failed to fetch payment status:", err.response?.data || err.message);
-    return { hasPaid: false, status: "unpaid" };
+    throw err;
   }
 };

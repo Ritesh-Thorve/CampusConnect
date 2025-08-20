@@ -1,53 +1,24 @@
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { fetchAllProfiles } from "../redux/features/profile/studentsProfilesSlice";
-import { useAppDispatch } from "@/redux/store/hooks";
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import StudentCard from "@/components/college/StudentCard";
 import EmptyState from "@/components/college/EmptyState";
 import PaymentPrompt from "@/components/PaymentPrompt";
 import { usePaymentStatus } from "@/hooks/usePaymentStatus";
-import type { RootState } from "@/redux/store/store";
-import type { StudentProfile } from "@/types/student";
+import { useProfiles } from "@/redux/hooks/useProfiles";
 
 const College = () => {
-  const dispatch = useAppDispatch();
-  const { data, loading, error } = useSelector(
-    (state: RootState) => state.allStudentsProfiles
-  );
-
   const [page, setPage] = useState(1);
   const limit = 6;
+
+  // Fetch profiles using custom hook
+  const { students, data, loading, error } = useProfiles({ page, limit });
 
   // Used payment hook
   const { hasPaid, loading: paymentLoading } = usePaymentStatus();
 
-  useEffect(() => {
-    dispatch(fetchAllProfiles({ page, limit }));
-  }, [dispatch, page]);
-
-  // Map API ProfileData to StudentProfile
-  const students: StudentProfile[] = (data?.profiles || []).map((s) => ({
-    name: s.fullName || "",
-    fullName: s.fullName || "",
-    email: s.email || "",
-    collegeName: s.collegeName || "",
-    collegeAddress: s.collegeAddress || "",
-    fieldOfStudy: s.fieldOfStudy || "",
-    graduationYear: s.graduationYear?.toString() || "",
-    bio: s.bio || "",
-    linkedinUrl: s.linkedIn || "",
-    twitterUrl: s.twitter || "",
-    githubUrl: s.github || "",
-    profileImage: s.profileImage || "",
-    collegeImage: s.collegeImage || "",
-    collegeIdCard: s.collegeIdCard || "",
-    major: s.fieldOfStudy || "",
-  }));
-
-  // Show loader until profiles are ready (ignore payment loading)
-  if (loading) {
+  // Loader should only show while fetching and no data yet
+  if (loading && !data && !error) {
     return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
         {/* Navbar */}
@@ -106,15 +77,20 @@ const College = () => {
             </p>
           </div>
 
+          {/* ✅ Show error if request fails */}
           {error && <p className="text-center text-red-500">{error}</p>}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
-            {students.map((student, index) => (
-              <StudentCard key={`${student.name}-${index}`} student={student} />
-            ))}
-          </div>
+          {/* ✅ Only render grid if profiles exist */}
+          {students.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
+              {students.map((student, index) => (
+                <StudentCard key={`${student.name}-${index}`} student={student} />
+              ))}
+            </div>
+          )}
 
-          {students.length === 0 && <EmptyState />}
+          {/* ✅ Empty state if no profiles */}
+          {!loading && !error && students.length === 0 && <EmptyState />}
 
           {/* Pagination */}
           {data?.totalPages && data.totalPages > 1 && (
@@ -146,7 +122,14 @@ const College = () => {
       <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
 
       {/* Payment Prompt only if unpaid and after status is fetched */}
-      {!hasPaid && !paymentLoading && <PaymentPrompt onClose={() => {}} />}
+      {/* Payment Prompt only if unpaid and after status is fetched */}
+      {!hasPaid && !paymentLoading && (
+        <PaymentPrompt
+          onClose={() => { }}
+          hasPaid={hasPaid}
+          loading={paymentLoading}
+        />
+      )}
     </div>
   );
 };

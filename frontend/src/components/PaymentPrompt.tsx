@@ -6,20 +6,24 @@ import { useAppDispatch, useAppSelector } from "@/redux/store/hooks";
 import { markPaid } from "@/redux/features/payment/paymentSlice";
 import { createOrder, verifyPayment } from "@/api/paymentApi";
 import toast from "react-hot-toast";
-import { usePaymentStatus } from "@/hooks/usePaymentStatus"; 
 
-const PaymentPrompt = ({ onClose }) => {
+interface PaymentPromptProps {
+  onClose: () => void;
+  hasPaid: boolean;
+  loading: boolean;
+}
+
+const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading }) => {
   const [isVisible, setIsVisible] = useState(true);
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
-  const { hasPaid, loading } = usePaymentStatus(); 
 
   const handleClose = () => {
     setIsVisible(false);
     setTimeout(onClose, 300);
   };
 
-  // Hide modal ONLY if already paid
+  // Hide modal if already paid or closed
   if (!isVisible || hasPaid) return null;
 
   const handlePayment = async () => {
@@ -88,7 +92,6 @@ const PaymentPrompt = ({ onClose }) => {
 
         <div className="text-center space-y-4">
           {loading ? (
-            // Show loader message while checking payment status
             <p className="text-sm text-muted-foreground">
               Checking payment status...
             </p>
