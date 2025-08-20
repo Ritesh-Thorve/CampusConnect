@@ -24,30 +24,27 @@ export const createOrder = async (req, res) => {
       });
     }
 
+    // ✅ Shortened receipt (must be < 40 chars)
+    const receiptId = `rcpt_${Date.now()}_${userId.slice(0, 6)}`;
+
     // Create new Razorpay order
     const options = {
       amount: FIXED_AMOUNT * 100, // amount in paise
       currency: "INR",
-      receipt: `receipt_${Date.now()}_${userId}`,
+      receipt: receiptId,
     };
 
     const order = await razorpay.orders.create(options);
 
-    // Check if this Razorpay order already exists (avoid duplicate crash)
-    const existingOrder = await prisma.payment.findUnique({
-      where: { razorpayId: order.id },
+    // Save new order in DB
+    await prisma.payment.create({
+      data: {
+        userId,
+        amount: FIXED_AMOUNT,
+        razorpayId: order.id,
+        status: "created",
+      },
     });
-
-    if (!existingOrder) {
-      await prisma.payment.create({
-        data: {
-          userId,
-          amount: FIXED_AMOUNT,
-          razorpayId: order.id,
-          status: "created",
-        },
-      });
-    }
 
     return res.json({
       success: true,
@@ -56,45 +53,21 @@ export const createOrder = async (req, res) => {
       order,
     });
   } catch (err) {
-    // Prisma-specific error handling
-    if (err.code === "P2002") {
-      console.error(
-        "Prisma unique constraint failed (duplicate razorpayId):",
-        err.meta?.target
-      );
-      return res.status(400).json({
-        error: "Order already exists for this razorpayId",
-        details: err.meta?.target,
-      });
-    }
-
-    // Razorpay API errors
-    if (err.error && err.error.description) {
-      console.error("Razorpay error:", err.error.description);
-      return res.status(400).json({
-        error: "Razorpay API Error",
-        details: err.error.description,
-      });
-    }
-
-    // Generic error logging
-    console.error("Error creating order:", err);
-    return res
-      .status(500)
-      .json({ error: err.message || "Internal Server Error" });
+    console.error("❌ Error creating order:", err.response?.data || err.message);
+    return res.status(500).json({
+      error: "Razorpay API Error",
+      details: err.response?.data || err.message,
+    });
   }
 };
 
 // Verify Payment
 export const verifyPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing payment details" });
+      return res.status(400).json({ success: false, message: "Missing payment details" });
     }
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -105,28 +78,22 @@ export const verifyPayment = async (req, res) => {
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid signature" });
+      return res.status(400).json({ success: false, message: "Invalid signature" });
     }
 
     await prisma.payment.update({
       where: { razorpayId: razorpay_order_id },
-      data: {
-        status: "paid",
-      },
+      data: { status: "paid" },
     });
 
     return res.json({ success: true, message: "Payment verified successfully" });
   } catch (err) {
-    console.error("Payment verification failed:", err);
-    return res
-      .status(500)
-      .json({ error: err.message || "Internal Server Error" });
+    console.error("❌ Payment verification failed:", err.message);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// Get Payment Status
+// Get Payment Status 
 export const getPaymentStatus = async (req, res) => {
   try {
     if (!req.user?.userId) {
@@ -146,14 +113,12 @@ export const getPaymentStatus = async (req, res) => {
     }
 
     return res.json({
-      status: payment.status,
+      status: payment.status, // "created" | "paid"
       amount: payment.amount,
       createdAt: payment.createdAt,
     });
   } catch (err) {
-    console.error("Error fetching payment status:", err);
-    return res
-      .status(500)
-      .json({ error: err.message || "Internal Server Error" });
+    console.error("❌ Error fetching payment status:", err.message);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
