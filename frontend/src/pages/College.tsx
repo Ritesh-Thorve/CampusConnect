@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import StudentCard from "@/components/college/StudentCard";
@@ -6,16 +6,28 @@ import EmptyState from "@/components/college/EmptyState";
 import PaymentPrompt from "@/components/PaymentPrompt";
 import { usePaymentStatus } from "@/hooks/usePaymentStatus";
 import { useProfiles } from "@/redux/hooks/useProfiles";
+import { useAppDispatch } from "@/redux/store/hooks";
+import { fetchPaymentStatus } from "@/redux/features/payment/paymentSlice";
 
 const College = () => {
   const [page, setPage] = useState(1);
+  const [showPrompt, setShowPrompt] = useState(true);
   const limit = 6;
+
+  const dispatch = useAppDispatch();
 
   // Fetch profiles using custom hook
   const { students, data, loading, error } = useProfiles({ page, limit });
 
-  // Used payment hook
+  // Payment status from redux
   const { hasPaid, loading: paymentLoading } = usePaymentStatus();
+
+  // Fetch payment status here ONLY once
+  useEffect(() => {
+    dispatch(fetchPaymentStatus()).catch(() => {
+      console.warn("Payment status fetch failed, continuing as unpaid");
+    });
+  }, [dispatch]);
 
   // Loader should only show while fetching and no data yet
   if (loading && !data && !error) {
@@ -77,10 +89,10 @@ const College = () => {
             </p>
           </div>
 
-          {/* ✅ Show error if request fails */}
+          {/* Show error if request fails */}
           {error && <p className="text-center text-red-500">{error}</p>}
 
-          {/* ✅ Only render grid if profiles exist */}
+          {/* Only render grid if profiles exist */}
           {students.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
               {students.map((student, index) => (
@@ -89,7 +101,7 @@ const College = () => {
             </div>
           )}
 
-          {/* ✅ Empty state if no profiles */}
+          {/* Empty state if no profiles */}
           {!loading && !error && students.length === 0 && <EmptyState />}
 
           {/* Pagination */}
@@ -122,10 +134,9 @@ const College = () => {
       <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
 
       {/* Payment Prompt only if unpaid and after status is fetched */}
-      {/* Payment Prompt only if unpaid and after status is fetched */}
-      {!hasPaid && !paymentLoading && (
+      {!hasPaid && !paymentLoading && showPrompt && (
         <PaymentPrompt
-          onClose={() => { }}
+          onClose={() => setShowPrompt(false)}
           hasPaid={hasPaid}
           loading={paymentLoading}
         />

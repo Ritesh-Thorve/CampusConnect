@@ -23,7 +23,7 @@ const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading
     setTimeout(onClose, 300);
   };
 
-  // 🔒 Don't render if already paid
+  // Don't render if already paid
   if (hasPaid) return null;
 
   // Hide modal if closed
@@ -32,6 +32,11 @@ const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading
   const handlePayment = async () => {
     if (!user) {
       toast.error("You need to login first!");
+      return;
+    }
+
+    if (!window.Razorpay) {
+      toast.error("Payment service unavailable. Please refresh the page.");
       return;
     }
 
