@@ -29,6 +29,13 @@ const College = () => {
     });
   }, [dispatch]);
 
+  // Persist paid status locally to avoid showing prompt if API is slightly delayed
+  useEffect(() => {
+    if (hasPaid) localStorage.setItem("paid", "true");
+  }, [hasPaid]);
+
+  const localPaid = localStorage.getItem("paid") === "true";
+
   // Loader should only show while fetching and no data yet
   if (loading && !data && !error) {
     return (
@@ -134,7 +141,7 @@ const College = () => {
       <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
 
       {/* Payment Prompt only if unpaid and after status is fetched */}
-      {!hasPaid && !paymentLoading && showPrompt && (
+      {!hasPaid && !localPaid && !paymentLoading && showPrompt && (
         <PaymentPrompt
           onClose={() => setShowPrompt(false)}
           hasPaid={hasPaid}

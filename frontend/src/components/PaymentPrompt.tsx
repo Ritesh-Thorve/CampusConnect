@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Crown, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +18,14 @@ const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
 
+  // Auto-close modal if user has paid
+  useEffect(() => {
+    if (hasPaid && isVisible) {
+      setIsVisible(false);
+      setTimeout(onClose, 300);
+    }
+  }, [hasPaid, isVisible, onClose]);
+
   const handleClose = () => {
     setIsVisible(false);
     setTimeout(onClose, 300);
@@ -26,7 +34,7 @@ const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading
   // Don't render if already paid
   if (hasPaid) return null;
 
-  // Hide modal if closed
+  // Hide modal if manually closed
   if (!isVisible) return null;
 
   const handlePayment = async () => {
@@ -43,7 +51,6 @@ const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading
     try {
       toast.loading("Initializing payment...", { id: "payment" });
 
-      // Create order from backend
       const { order } = await createOrder();
 
       const options = {
@@ -53,7 +60,7 @@ const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading
         name: "Campus Connect",
         description: "Premium Access",
         order_id: order.id,
-        handler: async (response) => {
+        handler: async (response: any) => {
           try {
             await verifyPayment({
               razorpay_order_id: response.razorpay_order_id,
@@ -100,9 +107,7 @@ const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading
 
         <div className="text-center space-y-4">
           {loading ? (
-            <p className="text-sm text-muted-foreground">
-              Checking payment status...
-            </p>
+            <p className="text-sm text-muted-foreground">Checking payment status...</p>
           ) : (
             <>
               <div className="flex justify-center">
@@ -116,8 +121,7 @@ const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading
                   Unlock Premium Access
                 </h3>
                 <p className="text-muted-foreground">
-                  Get access to 30+ exclusive student profiles and advanced
-                  features
+                  Get access to 30+ exclusive student profiles and advanced features
                 </p>
               </div>
 
