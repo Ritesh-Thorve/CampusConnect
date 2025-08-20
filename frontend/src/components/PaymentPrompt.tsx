@@ -23,8 +23,11 @@ const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading
     setTimeout(onClose, 300);
   };
 
-  // Hide modal if already paid or closed
-  if (!isVisible || hasPaid) return null;
+  // 🔒 Don't render if already paid
+  if (hasPaid) return null;
+
+  // Hide modal if closed
+  if (!isVisible) return null;
 
   const handlePayment = async () => {
     if (!user) {
@@ -54,7 +57,7 @@ const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading
             });
 
             dispatch(markPaid()); // instantly update state
-            toast.success("Payment successful!");
+            toast.success("Payment successful! 🎉");
             handleClose();
           } catch (err) {
             console.error("Payment verification failed:", err);
