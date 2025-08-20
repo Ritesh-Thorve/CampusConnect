@@ -69,7 +69,7 @@ const PaymentPrompt: React.FC<PaymentPromptProps> = ({ onClose, hasPaid, loading
             });
 
             dispatch(markPaid()); // instantly update state
-            toast.success("Payment successful! 🎉");
+            toast.success("Payment successful!");
             handleClose();
           } catch (err) {
             console.error("Payment verification failed:", err);
