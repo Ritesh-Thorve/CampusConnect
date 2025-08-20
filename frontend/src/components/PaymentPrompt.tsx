@@ -19,8 +19,8 @@ const PaymentPrompt = ({ onClose }) => {
     setTimeout(onClose, 300);
   };
 
-  // Hide modal if already paid or while still checking
-  if (!isVisible || loading || hasPaid) return null;
+  // Hide modal ONLY if already paid
+  if (!isVisible || hasPaid) return null;
 
   const handlePayment = async () => {
     if (!user) {
@@ -49,7 +49,7 @@ const PaymentPrompt = ({ onClose }) => {
               razorpay_signature: response.razorpay_signature,
             });
 
-            dispatch(markPaid()); //instantly update state
+            dispatch(markPaid()); // instantly update state
             toast.success("Payment successful!");
             handleClose();
           } catch (err) {
@@ -87,45 +87,55 @@ const PaymentPrompt = ({ onClose }) => {
         </button>
 
         <div className="text-center space-y-4">
-          <div className="flex justify-center">
-            <div className="p-3 rounded-full bg-gradient-to-r from-primary to-purple-600">
-              <Crown className="w-8 h-8 text-primary-foreground" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-              Unlock Premium Access
-            </h3>
-            <p className="text-muted-foreground">
-              Get access to 30+ exclusive student profiles and advanced features
+          {loading ? (
+            // Show loader message while checking payment status
+            <p className="text-sm text-muted-foreground">
+              Checking payment status...
             </p>
-          </div>
+          ) : (
+            <>
+              <div className="flex justify-center">
+                <div className="p-3 rounded-full bg-gradient-to-r from-primary to-purple-600">
+                  <Crown className="w-8 h-8 text-primary-foreground" />
+                </div>
+              </div>
 
-          <div className="flex items-center justify-center gap-2 p-4 bg-muted/50 rounded-lg">
-            <Users className="w-5 h-5 text-primary" />
-            <span className="font-semibold">30+ Premium Profiles</span>
-          </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                  Unlock Premium Access
+                </h3>
+                <p className="text-muted-foreground">
+                  Get access to 30+ exclusive student profiles and advanced
+                  features
+                </p>
+              </div>
 
-          <div className="space-y-3">
-            <div className="text-3xl font-bold text-primary">
-              ₹100
-              <span className="text-sm text-muted-foreground font-normal ml-1">
-                one-time
-              </span>
-            </div>
+              <div className="flex items-center justify-center gap-2 p-4 bg-muted/50 rounded-lg">
+                <Users className="w-5 h-5 text-primary" />
+                <span className="font-semibold">30+ Premium Profiles</span>
+              </div>
 
-            <Button
-              className="w-full h-12 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground font-semibold"
-              onClick={handlePayment}
-            >
-              Unlock Now
-            </Button>
+              <div className="space-y-3">
+                <div className="text-3xl font-bold text-primary">
+                  ₹100
+                  <span className="text-sm text-muted-foreground font-normal ml-1">
+                    one-time
+                  </span>
+                </div>
 
-            <p className="text-xs text-muted-foreground">
-              Secure payment processed by Razorpay
-            </p>
-          </div>
+                <Button
+                  className="w-full h-12 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground font-semibold"
+                  onClick={handlePayment}
+                >
+                  Unlock Now
+                </Button>
+
+                <p className="text-xs text-muted-foreground">
+                  Secure payment processed by Razorpay
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </Card>
     </div>

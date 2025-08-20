@@ -18,7 +18,6 @@ const College = () => {
   );
 
   const [page, setPage] = useState(1);
-  const [showPaymentPrompt, setShowPaymentPrompt] = useState(true); //local state to hide modal
   const limit = 6;
 
   // Used payment hook
@@ -47,8 +46,8 @@ const College = () => {
     major: s.fieldOfStudy || "",
   }));
 
-  // 🔹 Show loader until both payment + profiles are ready
-  if (paymentLoading || loading) {
+  // Show loader until profiles are ready (ignore payment loading)
+  if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
         {/* Navbar */}
@@ -146,10 +145,8 @@ const College = () => {
       <div className="hidden md:block"><Footer /></div>
       <div className="md:hidden fixed bottom-0 w-full z-50"><Navbar /></div>
 
-      {/* Payment Prompt only if unpaid */}
-      {!hasPaid && showPaymentPrompt && (
-        <PaymentPrompt onClose={() => setShowPaymentPrompt(false)} />
-      )}
+      {/* Payment Prompt only if unpaid and after status is fetched */}
+      {!hasPaid && !paymentLoading && <PaymentPrompt onClose={() => {}} />}
     </div>
   );
 };

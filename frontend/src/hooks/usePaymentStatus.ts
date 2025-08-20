@@ -9,7 +9,12 @@ export const usePaymentStatus = () => {
   );
 
   useEffect(() => {
-    dispatch(fetchPaymentStatus());
+    // fire only once on mount
+    dispatch(fetchPaymentStatus())
+      .unwrap()
+      .catch(() => {
+        console.warn("Payment status fetch failed, continuing as unpaid");
+      });
   }, [dispatch]);
 
   return { hasPaid, status, amount, createdAt, loading, error };
