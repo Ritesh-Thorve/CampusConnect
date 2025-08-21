@@ -6,7 +6,7 @@
 
 ## 🚀 Project Status
 
-🛠️ Campus Connect is currently under development. New features and enhancements are actively being added.
+🛠️ Campus Connect is currently under development for Google login. New features and enhancements are actively being added.
 
 ---
 
@@ -31,7 +31,6 @@
 ### 🔙 Backend
 - Node.js + Express.js
 - Postgress + Prisma ORM
-- Nodemailer for sending emails
 
 ### 🧪 Dev Tools
 - Vercel (Frontend deployment)
