@@ -42,12 +42,17 @@ backend/
 
 ## ✅ ENV
 ```
-DATABASE_URL=your_postgres_connection_url
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_KEY=your_supabase_service_key
-JWT_SECRET=your_jwt_secret
-RAZORPAY_KEY_ID=your_razorpay_key_id
-RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+DATABASE_URL=
+DIRECT_DATABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+CLIENT_URL=
+SUPABASE_URL=
+SUPABASE_KEY=
+SUPABASE_ANON_KEY=
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+JWT_SECRET=
+
 ```
 
 ---
