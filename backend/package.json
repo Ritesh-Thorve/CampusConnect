@@ -13,7 +13,7 @@
   "description": "CampusConnect Backend",
   "dependencies": {
     "@prisma/client": "^6.19.3",
-    "@supabase/supabase-js": "^2.52.1",
+    "@supabase/supabase-js": "^2.103.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "esbuild": "^0.25.9",

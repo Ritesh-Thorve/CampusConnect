@@ -3,6 +3,8 @@ import type { AuthResponse, User } from "./types";
 import { signUpUser, googleAuthUser } from "@/api/auth/authApi";
 import { supabaseClient } from "../../../config/supabaseClient";
 
+// Types
+
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -10,6 +12,64 @@ interface AuthState {
   loading: boolean;
   error: string | null;
 }
+
+// Storage helper
+
+const safeStorage = {
+  set: (key: string, value: string) => {
+    if (typeof window !== "undefined") localStorage.setItem(key, value);
+  },
+  get: (key: string): string | null => {
+    if (typeof window !== "undefined") return localStorage.getItem(key);
+    return null;
+  },
+  remove: (key: string) => {
+    if (typeof window !== "undefined") localStorage.removeItem(key);
+  },
+};
+
+// Shared utils 
+
+/** Decode JWT expiry from payload (returns ms timestamp or null) */
+const getTokenExpiry = (token: string): number | null => {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.exp ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+};
+
+/** Persist auth state to localStorage */
+const persistAuth = (token: string, user: User, expiry: number | null) => {
+  safeStorage.set("cc_token", token);
+  safeStorage.set("cc_user", JSON.stringify(user));
+  if (expiry) {
+    safeStorage.set("cc_expiry", expiry.toString());
+  } else {
+    safeStorage.remove("cc_expiry");
+  }
+};
+
+/** Clear all auth keys from localStorage */
+const clearPersistedAuth = () => {
+  safeStorage.remove("cc_token");
+  safeStorage.remove("cc_user");
+  safeStorage.remove("cc_expiry");
+};
+
+/** Apply a successful auth payload to the Redux state */
+const applyAuthPayload = (state: AuthState, payload: AuthResponse, defaultProvider = "manual") => {
+  state.user = {
+    ...payload.user,
+    provider: payload.user.provider || defaultProvider,
+  };
+  state.token = payload.token;
+  state.expiry = getTokenExpiry(payload.token);
+  persistAuth(state.token, state.user, state.expiry);
+};
+
+//  Initial state 
 
 const initialState: AuthState = {
   user: null,
@@ -19,36 +79,25 @@ const initialState: AuthState = {
   error: null,
 };
 
-const safeStorage = {
-  set: (key: string, value: string) => {
-    if (typeof window !== "undefined") localStorage.setItem(key, value);
-  },
-  get: (key: string) => {
-    if (typeof window !== "undefined") return localStorage.getItem(key);
-    return null;
-  },
-  remove: (key: string) => {
-    if (typeof window !== "undefined") localStorage.removeItem(key);
-  },
-};
+//  Thunks 
 
-// Manual signup
+/** Manual sign-up */
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
-  async (
-    data: { fullname: string; email: string; password: string },
-    { rejectWithValue }
-  ) => {
+  async (data: { fullname: string; email: string; password: string }, { rejectWithValue }) => {
     try {
-      const res = await signUpUser(data);
-      return res;
-    } catch (e: any) {
-      return rejectWithValue(e?.response?.data?.message || "Registration failed");
+      return await signUpUser(data);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Registration failed";
+      return rejectWithValue((e as any)?.response?.data?.message || msg);
     }
   }
 );
 
-// Start Google login → this just triggers redirect
+/**
+ * Trigger Google OAuth redirect.
+ * Sends user to /auth/callback (NOT /profile directly).
+ */
 export const loginWithGoogle = createAsyncThunk(
   "auth/loginWithGoogle",
   async (_, { rejectWithValue }) => {
@@ -56,18 +105,22 @@ export const loginWithGoogle = createAsyncThunk(
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/profile`, // redirect back
+          redirectTo: `${window.location.origin}/auth/callback`, //dedicated callback
         },
       });
       if (error) throw error;
       return null;
-    } catch (e: any) {
-      return rejectWithValue(e.message || "Google login failed");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Google login failed";
+      return rejectWithValue(msg);
     }
   }
 );
 
-// Complete Google login after redirect → sync with backend
+/**
+ * Complete Google login after OAuth redirect.
+ * Called from /auth/callback — exchanges Supabase session for your backend JWT.
+ */
 export const completeGoogleLogin = createAsyncThunk(
   "auth/completeGoogleLogin",
   async (_, { rejectWithValue }) => {
@@ -76,168 +129,105 @@ export const completeGoogleLogin = createAsyncThunk(
       if (error) throw error;
       if (!data.session) throw new Error("No active Google session");
 
-      const session = data.session;
-      const user = session.user;
-
-      const backendRes = await googleAuthUser({
-        fullname: user.user_metadata.full_name || "",
-        email: user.email!,
-        provider: "google",
-        supabaseId: user.id,
-        access_token: session.access_token,
-      });
+      // Send only access_token — backend derives everything else
+      const backendRes = await googleAuthUser(data.session.access_token);
 
       return backendRes as AuthResponse;
-    } catch (e: any) {
-      return rejectWithValue(e.message || "Google login failed");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Google login failed";
+      return rejectWithValue(msg);
     }
   }
 );
+
+// Slice 
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    /** Manually set credentials (e.g. after email/password login) */
     setCredentials: (state, action: PayloadAction<AuthResponse>) => {
-      state.user = {
-        ...action.payload.user,
-        provider: action.payload.user.provider || "manual",
-      };
-      state.token = action.payload.token;
+      applyAuthPayload(state, action.payload);
       state.error = null;
-
-      try {
-        const payload = JSON.parse(atob(action.payload.token.split(".")[1]));
-        state.expiry = payload.exp ? payload.exp * 1000 : null;
-      } catch {
-        state.expiry = null;
-      }
-
-      safeStorage.set("cc_token", action.payload.token);
-      safeStorage.set("cc_user", JSON.stringify(state.user));
-      if (state.expiry) {
-        safeStorage.set("cc_expiry", state.expiry.toString());
-      } else {
-        safeStorage.remove("cc_expiry");
-      }
     },
+
+    /** Rehydrate auth state from localStorage on app mount */
     hydrateFromStorage: (state) => {
       try {
         const token = safeStorage.get("cc_token");
         const userRaw = safeStorage.get("cc_user");
         const expiryRaw = safeStorage.get("cc_expiry");
-
         const expiry = expiryRaw ? Number(expiryRaw) : null;
 
+        // Token expired — clear everything
         if (expiry && Date.now() > expiry) {
-          safeStorage.remove("cc_token");
-          safeStorage.remove("cc_user");
-          safeStorage.remove("cc_expiry");
-          state.user = null;
-          state.token = null;
-          state.expiry = null;
-          return;
+          clearPersistedAuth();
+          return; // initialState values stay (null)
         }
 
         state.token = token || null;
         state.user = userRaw ? JSON.parse(userRaw) : null;
         state.expiry = expiry;
       } catch {
-        state.user = null;
-        state.token = null;
-        state.expiry = null;
+        clearPersistedAuth();
       }
     },
+
+    /** Log out and clear all state + storage */
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.expiry = null;
-      safeStorage.remove("cc_token");
-      safeStorage.remove("cc_user");
-      safeStorage.remove("cc_expiry");
+      state.error = null;
+      clearPersistedAuth();
     },
   },
+
   extraReducers: (builder) => {
     builder
       // Register
-      .addCase(registerUser.pending, (s) => {
-        s.loading = true;
-        s.error = null;
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(registerUser.fulfilled, (s, a) => {
-        s.loading = false;
-        s.user = {
-          ...a.payload.user,
-          provider: a.payload.user.provider || "manual",
-        };
-        s.token = a.payload.token;
-
-        try {
-          const payload = JSON.parse(atob(a.payload.token.split(".")[1]));
-          s.expiry = payload.exp ? payload.exp * 1000 : null;
-        } catch {
-          s.expiry = null;
-        }
-
-        safeStorage.set("cc_token", a.payload.token);
-        safeStorage.set("cc_user", JSON.stringify(s.user));
-        if (s.expiry) {
-          safeStorage.set("cc_expiry", s.expiry.toString());
-        } else {
-          safeStorage.remove("cc_expiry");
-        }
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loading = false;
+        applyAuthPayload(state, action.payload);
       })
-      .addCase(registerUser.rejected, (s, a) => {
-        s.loading = false;
-        s.error = (a.payload as string) || "Something went wrong";
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) || "Registration failed";
       })
 
-      // Start Google login
-      .addCase(loginWithGoogle.pending, (s) => {
-        s.loading = true;
-        s.error = null;
+      // Start Google login (redirect only)
+      .addCase(loginWithGoogle.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(loginWithGoogle.fulfilled, (s) => {
-        s.loading = false;
+      .addCase(loginWithGoogle.fulfilled, (state) => {
+        state.loading = false;
+        // No state change — redirect is in progress
       })
-      .addCase(loginWithGoogle.rejected, (s, a) => {
-        s.loading = false;
-        s.error = (a.payload as string) || "Google login failed";
+      .addCase(loginWithGoogle.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) || "Google login failed";
       })
 
-      // Complete Google login
-      .addCase(completeGoogleLogin.pending, (s) => {
-        s.loading = true;
-        s.error = null;
+      //  Complete Google login (after callback) 
+      .addCase(completeGoogleLogin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(completeGoogleLogin.fulfilled, (s, a) => {
-        s.loading = false;
-        if (a.payload) {
-          s.user = {
-            ...a.payload.user,
-            provider: a.payload.user.provider || "google",
-          };
-          s.token = a.payload.token;
-
-          try {
-            const payload = JSON.parse(atob(a.payload.token.split(".")[1]));
-            s.expiry = payload.exp ? payload.exp * 1000 : null;
-          } catch {
-            s.expiry = null;
-          }
-
-          safeStorage.set("cc_token", a.payload.token);
-          safeStorage.set("cc_user", JSON.stringify(s.user));
-          if (s.expiry) {
-            safeStorage.set("cc_expiry", s.expiry.toString());
-          } else {
-            safeStorage.remove("cc_expiry");
-          }
+      .addCase(completeGoogleLogin.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload) {
+          applyAuthPayload(state, action.payload, "google");
         }
       })
-      .addCase(completeGoogleLogin.rejected, (s, a) => {
-        s.loading = false;
-        s.error = (a.payload as string) || "Google login failed";
+      .addCase(completeGoogleLogin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) || "Google login failed";
       });
   },
 });

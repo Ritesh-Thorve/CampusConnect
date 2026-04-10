@@ -13,68 +13,49 @@ import { supabaseClient } from "../../config/supabaseClient";
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+const [formData, setFormData] = useState({ email: "", password: "" });
+const [loading, setLoading] = useState(false);
+const navigate = useNavigate();
+const dispatch = useAppDispatch();
 
-  // On mount, check if Supabase already has a session (after redirect from Google)
-  useEffect(() => {
-    const getSession = async () => {
-      const { data, error } = await supabaseClient.auth.getSession();
-      if (data?.session) {
-        dispatch(
-          setCredentials({
-            token: data.session.access_token,
-            user: {
-              id: data.session.user.id,
-              email: data.session.user.email!,
-              fullname: data.session.user.user_metadata.full_name || "",
-              provider: data.session.user.app_metadata?.provider || "google",
-            },
-          })
-        );
-        navigate("/profile");
-      }
-    };
-    getSession();
-  }, [dispatch, navigate]);
+// Email/password login
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    const res = await loginUser(formData.email, formData.password);
+    dispatch(setCredentials(res));
+    toast.success("Logged in successfully!");
+    navigate("/profile");
+  } catch {
+    toast.error("Invalid Credentials");
+  } finally {
+    setLoading(false);
+  }
+};
 
-  // Email/password login
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await loginUser(formData.email, formData.password);
-      dispatch(setCredentials(res));
-      toast.success("Logged in successfully!");
-      navigate("/profile");
-    } catch (error) {
-      toast.error("Invalid Credentials");
-    } finally {
-      setLoading(false);
-    }
-  };
+// Form change
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setFormData({ ...formData, [e.target.name]: e.target.value });
+};
 
-  // Form change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // Google login
-  const handleGoogleLogin = async () => {
-    try {
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/profile`,
-        },
-      });
-      if (error) throw error;
-    } catch (err: any) {
-      toast.error(err.message || "Google login failed");
-    }
-  };
+// Google login — just triggers redirect
+const handleGoogleLogin = async () => {
+  setLoading(true);
+  try {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) throw error;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Google login failed";
+    toast.error(message);
+    setLoading(false); // only reset on error
+  }
+};
 
   return (
     <div className="w-full max-w-lg">

@@ -13,41 +13,37 @@ const OAuthCallback = () => {
   useEffect(() => {
     const handleOAuth = async () => {
       try {
-        const {
-          data: { session },
-          error,
-        } = await supabaseClient.auth.getSession();
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
 
         if (error || !session) {
           toast.error("Google authentication failed");
           return navigate("/signup");
         }
 
-        const user = session.user;
+        // Only send access_token — backend derives everything else
+        const res = await googleAuthUser(session.access_token);
 
-        const res = await googleAuthUser({
-          fullname:
-            user.user_metadata.full_name || user.user_metadata.name || "",
-          email: user.email || "",
-          provider: "google",
-          supabaseId: user.id,
-          access_token: session.access_token, 
-        });
+        // Use correct field names from backend response
+        dispatch(setCredentials({ token: res.token, user: res.user }));
 
         toast.success("Google Login successful");
-        dispatch(setCredentials({ ...res, accessToken: res.access_token }));
-        window.localStorage.setItem("accessToken", res.access_token);
-
         navigate("/profile");
-      } catch (err: any) {
-        toast.error(err.message || "Google OAuth failed");
+
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Google OAuth failed";
+        toast.error(message);
+        navigate("/signup"); // don't leave user stuck on /auth/callback
       }
     };
 
     handleOAuth();
   }, [dispatch, navigate]);
 
-  return <div>Loading...</div>;
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <p className="text-gray-500 animate-pulse">Logging you in...</p>
+    </div>
+  );
 };
 
 export default OAuthCallback;

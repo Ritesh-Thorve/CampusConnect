@@ -98,29 +98,46 @@ export const googleAuth = async (req, res, next) => {
 
     const { access_token } = req.body;
 
-    // Verify token with Supabase (service role client required)
+    // Verify token with Supabase
     const { data: userData, error } = await supabaseAdmin.auth.getUser(access_token);
     if (error || !userData?.user) {
       return res.status(401).json({ error: "Invalid or expired access token" });
     }
 
     const { email, user_metadata, id: supabaseId } = userData.user;
+
+    // Guard: email must exist
+    if (!email) {
+      return res.status(400).json({ error: "Email not found in Google account" });
+    }
+
     const fullname = user_metadata?.full_name || "Google User";
+    const avatar = user_metadata?.avatar_url || null;
+
+    // Check if user is new
+    const existingUser = await prisma.user.findUnique({ where: { email } });
 
     // Upsert into Prisma
-    let user = await prisma.user.upsert({
+    const user = await prisma.user.upsert({
       where: { email },
-      update: { fullname, provider: "google", supabaseId },
-      create: { email, fullname, provider: "google", supabaseId }
+      update: { fullname, provider: "google", supabaseId, avatar },
+      create: { email, fullname, provider: "google", supabaseId, avatar }
     });
 
     const token = generateToken(user.id);
 
-    return res.json({
+    return res.status(existingUser ? 200 : 201).json({
       message: "Google OAuth successful",
-      user,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullname: user.fullname,
+        provider: user.provider,
+        avatar: user.avatar,
+      },
       token
     });
+
   } catch (err) {
     console.error("Google Auth Error:", err.message);
     next(err);
