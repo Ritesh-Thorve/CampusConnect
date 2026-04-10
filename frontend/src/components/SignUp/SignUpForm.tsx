@@ -28,47 +28,64 @@ const SignUpForm = () => {
     confirmPassword: "",
   });
 
-const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-  const { name, value } = e.target;
-  setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
-  // Live password check
-  if (name === "password" || name === "confirmPassword") {
-    if (
-      (name === "password" && formData.confirmPassword && value !== formData.confirmPassword) ||
-      (name === "confirmPassword" && formData.password && value !== formData.password)
-    ) {
-      setPasswordError("Passwords do not match");
-    } else {
-      setPasswordError("");
+    // Live password check
+    if (name === "password" || name === "confirmPassword") {
+      if (
+        (name === "password" && formData.confirmPassword && value !== formData.confirmPassword) ||
+        (name === "confirmPassword" && formData.password && value !== formData.password)
+      ) {
+        setPasswordError("Passwords do not match");
+      } else {
+        setPasswordError("");
+      }
     }
-  }
-};
-
-const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
-const toggleConfirmPasswordVisibility = () => setShowConfirmPassword((prev) => !prev);
-
-const handleSubmit = (e: FormEvent) => {
-  e.preventDefault();
-
-  if (formData.password !== formData.confirmPassword) {
-    setPasswordError("Passwords do not match");
-    return;
-  }
-
-  const payload = {
-    fullname: formData.fullname,
-    email: formData.email,
-    password: formData.password,
   };
 
-  dispatch(registerUser(payload))
-    .unwrap()
-    .then(() => {
-      toast.success("Account created successfully!");
-      navigate("/profile");
-    })
-    .catch((err) => toast.error("Failed to create account"));
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
+  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword((prev) => !prev);
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    }
+
+    const payload = {
+      fullname: formData.fullname,
+      email: formData.email,
+      password: formData.password,
+    };
+
+    dispatch(registerUser(payload))
+      .unwrap()
+      .then(() => {
+        toast.success("Account created successfully!");
+        navigate("/profile");
+      })
+      .catch((err) => toast.error("Failed to create account"));
+  };
+
+  const handleGoogleSignUp = async () => {
+  setGoogleLoading(true);
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/profile`,
+      },
+    });
+    if (error) throw error;
+  } catch (err: any) {
+    toast.error(err.message || "Google sign-in failed");
+  } finally {
+    setGoogleLoading(false);
+  }
 };
 
   return (
@@ -85,6 +102,26 @@ const handleSubmit = (e: FormEvent) => {
 
       <Card className="backdrop-blur-sm bg-white/90 shadow-2xl border-0 rounded-3xl">
         <CardContent className="p-8">
+          {/* Google Button */}
+          <Button
+            onClick={handleGoogleSignUp}
+            disabled={googleLoading}
+            variant="outline"
+            className="w-full h-14 text-gray-700 border-2 border-gray-200 hover:bg-gray-50 rounded-2xl mb-6 font-medium flex items-center justify-center text-lg"
+          >
+            {googleLoading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              <div className="flex items-center justify-center space-x-3">
+                <svg className="w-6 h-6" viewBox="0 0 24 24">{/* Google SVG */}</svg>
+                <span className="text-lg">Continue with Google</span>
+              </div>
+            )}
+          </Button>
+
           {/* Divider */}
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">

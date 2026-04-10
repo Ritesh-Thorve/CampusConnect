@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAppDispatch } from "@/redux/store/hooks";
 import { hydrateFromStorage } from "@/redux/features/auth/authSlice";
+
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
@@ -22,7 +23,7 @@ const App = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(hydrateFromStorage());
+    dispatch(hydrateFromStorage()); // Restore token/user at startup
   }, [dispatch]);
 
   return (
@@ -34,7 +35,6 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            {/* <Route path="/auth/callback" element={<OAuthCallback />} /> */}
             <Route
               path="/profile"
               element={
@@ -43,6 +43,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+            {/* <Route path="/oauth-callback" element={<OAuthCallback />} /> */}
             <Route path="/college" element={<College />} />
             <Route path="/updates" element={<Updates />} />
             <Route path="/trends" element={<Trends />} />

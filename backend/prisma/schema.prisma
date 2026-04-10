@@ -19,7 +19,6 @@ model User {
   provider   String
   updatedAt  DateTime  @updatedAt
   supabaseId String?   @unique
-  avatar     String?
   isPremium  Boolean   @default(false)
   payments   Payment[]
   profile    Profile?
