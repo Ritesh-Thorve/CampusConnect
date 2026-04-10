@@ -98,59 +98,59 @@ export const login = async (req, res, next) => {
 
 // Google OAuth
 
-export const googleAuth = async (req, res, next) => {
-  try {
-    const schema = Joi.object({
-      access_token: Joi.string().required(),
-    });
-    validate(schema, req.body);
+// export const googleAuth = async (req, res, next) => {
+//   try {
+//     const schema = Joi.object({
+//       access_token: Joi.string().required(),
+//     });
+//     validate(schema, req.body);
 
-    const { access_token } = req.body;
+//     const { access_token } = req.body;
 
-    // Step 1: Verify token with Supabase Admin
-    const { data: userData, error } = await supabaseAdmin.auth.getUser(access_token);
-    if (error || !userData?.user) {
-      console.error("Supabase token verification failed:", error?.message);
-      return res.status(401).json({ error: "Invalid or expired access token" });
-    }
+//     // Step 1: Verify token with Supabase Admin
+//     const { data: userData, error } = await supabaseAdmin.auth.getUser(access_token);
+//     if (error || !userData?.user) {
+//       console.error("Supabase token verification failed:", error?.message);
+//       return res.status(401).json({ error: "Invalid or expired access token" });
+//     }
 
-    const { email, user_metadata, id: supabaseId } = userData.user;
+//     const { email, user_metadata, id: supabaseId } = userData.user;
 
-    // Step 2: Email guard
-    if (!email) {
-      return res.status(400).json({ error: "Email not found in Google account" });
-    }
+//     // Step 2: Email guard
+//     if (!email) {
+//       return res.status(400).json({ error: "Email not found in Google account" });
+//     }
 
-    const fullname = user_metadata?.full_name || "Google User";
-    const avatar = user_metadata?.avatar_url || null;
+//     const fullname = user_metadata?.full_name || "Google User";
+//     const avatar = user_metadata?.avatar_url || null;
 
-    // Step 3: Check if new user
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+//     // Step 3: Check if new user
+//     const existingUser = await prisma.user.findUnique({ where: { email } });
 
-    // Step 4: Upsert user
-    const user = await prisma.user.upsert({
-      where: { email },
-      update: { fullname, provider: "google", supabaseId, avatar },
-      create: { email, fullname, provider: "google", supabaseId, avatar },
-    });
+//     // Step 4: Upsert user
+//     const user = await prisma.user.upsert({
+//       where: { email },
+//       update: { fullname, provider: "google", supabaseId, avatar },
+//       create: { email, fullname, provider: "google", supabaseId, avatar },
+//     });
 
-    // Step 5: Generate JWT
-    const token = generateToken(user.id);
+//     // Step 5: Generate JWT
+//     const token = generateToken(user.id);
 
-    return res.status(existingUser ? 200 : 201).json({
-      message: "Google OAuth successful",
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        fullname: user.fullname,
-        provider: user.provider,
-        avatar: user.avatar,
-      },
-    });
-  } catch (err) {
-    // Log full error (not just message) to catch Prisma/schema issues
-    console.error("Google Auth Error:", err);
-    next(err);
-  }
-};
+//     return res.status(existingUser ? 200 : 201).json({
+//       message: "Google OAuth successful",
+//       token,
+//       user: {
+//         id: user.id,
+//         email: user.email,
+//         fullname: user.fullname,
+//         provider: user.provider,
+//         avatar: user.avatar,
+//       },
+//     });
+//   } catch (err) {
+//     // Log full error (not just message) to catch Prisma/schema issues
+//     console.error("Google Auth Error:", err);
+//     next(err);
+//   }
+// };

@@ -30,24 +30,24 @@ export const loginUser = async (email: string, password: string) => {
 };
 
 // Login with Google
-interface GoogleAuthResponse {
-  message: string;
-  token: string;
-  user: {
-    id: string;
-    email: string;
-    fullname: string;
-    provider: string;
-    avatar: string | null;
-  };
-}
+// interface GoogleAuthResponse {
+//   message: string;
+//   token: string;
+//   user: {
+//     id: string;
+//     email: string;
+//     fullname: string;
+//     provider: string;
+//     avatar: string | null;
+//   };
+// }
 
-export const googleAuthUser = async (access_token: string): Promise<GoogleAuthResponse> => {
-  const { data } = await axiosInstance.post<GoogleAuthResponse>("/auth/google", {
-    access_token,
-  });
-  return data;
-};
+// export const googleAuthUser = async (access_token: string): Promise<GoogleAuthResponse> => {
+//   const { data } = await axiosInstance.post<GoogleAuthResponse>("/auth/google", {
+//     access_token,
+//   });
+//   return data;
+// };
 
 
 

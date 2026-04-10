@@ -41,23 +41,23 @@ const LoginForm = () => {
   };
 
   // Google OAuth — triggers redirect, loading only resets on error
-  const handleGoogleLogin = async () => {
-    setGoogleLoading(true);
-    try {
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (error) throw error;
-      // Don't reset loading here — page will redirect
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Google login failed";
-      toast.error(message);
-      setGoogleLoading(false); // only reset on error
-    }
-  };
+  // const handleGoogleLogin = async () => {
+  //   setGoogleLoading(true);
+  //   try {
+  //     const { error } = await supabaseClient.auth.signInWithOAuth({
+  //       provider: "google",
+  //       options: {
+  //         redirectTo: `${window.location.origin}/auth/callback`,
+  //       },
+  //     });
+  //     if (error) throw error;
+  //     // Don't reset loading here — page will redirect
+  //   } catch (err) {
+  //     const message = err instanceof Error ? err.message : "Google login failed";
+  //     toast.error(message);
+  //     setGoogleLoading(false); // only reset on error
+  //   }
+  // };
 
   return (
     <div className="w-full max-w-lg">
@@ -76,7 +76,7 @@ const LoginForm = () => {
 
       <Card className="backdrop-blur-sm bg-white/90 shadow-2xl border-0 rounded-3xl">
         <CardContent className="p-8">
-          {/* Google Sign-In button */}
+          {/* Google Sign-In button
           <Button
             onClick={handleGoogleLogin}
             disabled={googleLoading || emailLoading}
@@ -90,7 +90,6 @@ const LoginForm = () => {
               </>
             ) : (
               <div className="flex items-center justify-center space-x-3">
-                {/* Filled Google SVG */}
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -113,6 +112,7 @@ const LoginForm = () => {
               </div>
             )}
           </Button>
+          */}
 
           {/* Divider */}
           <div className="relative mb-6">

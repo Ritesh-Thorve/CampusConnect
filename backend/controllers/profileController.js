@@ -2,8 +2,7 @@ import prisma from "../config/db.js";
 import { uploadFile } from "../utils/upload.js";
 import Joi from "joi";
 
-//  Joi Schema 
-
+// Joi Schema (with graduation year validation)
 const profileSchema = Joi.object({
   fullName: Joi.string().required(),
   collegeName: Joi.string().required(),
@@ -20,8 +19,7 @@ const profileSchema = Joi.object({
   github: Joi.string().uri().optional(),
 });
 
-//  Create or Update Profile 
-
+// Create or Update Profile
 export const createOrUpdateProfile = async (req, res) => {
   try {
     const userId = req.user?.userId;
@@ -29,6 +27,7 @@ export const createOrUpdateProfile = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+    // Validate request body
     const { error } = profileSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
@@ -46,7 +45,7 @@ export const createOrUpdateProfile = async (req, res) => {
       github: req.body.github || null,
     };
 
-    // Upload images to Supabase storage
+    // Upload images to Supabase (store public URLs)
     try {
       if (req.files?.profileImg?.[0]) {
         data.profileImg = await uploadFile("profile-images", req.files.profileImg[0]);
@@ -58,7 +57,7 @@ export const createOrUpdateProfile = async (req, res) => {
         data.collegeIdCard = await uploadFile("college-id-cards", req.files.collegeIdCard[0]);
       }
     } catch (uploadErr) {
-      console.error("Supabase upload error:", uploadErr);
+      console.error("Supabase upload error:", uploadErr.message);
       return res.status(400).json({ error: uploadErr.message });
     }
 
@@ -68,15 +67,14 @@ export const createOrUpdateProfile = async (req, res) => {
       create: { userId, ...data },
     });
 
-    return res.json({ message: "Profile saved successfully", profile });
+    res.json({ message: "Profile saved successfully", profile });
   } catch (err) {
     console.error("Error saving profile:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
-//  Get My Profile 
-
+// Get My Profile
 export const getMyProfile = async (req, res) => {
   try {
     const userId = req.user?.userId;
@@ -87,14 +85,7 @@ export const getMyProfile = async (req, res) => {
     const profile = await prisma.profile.findFirst({
       where: { userId },
       include: {
-        user: {
-          select: {
-            fullname: true,
-            email: true,
-            avatar: true,   // include avatar for Google users
-            provider: true,
-          },
-        },
+        user: { select: { fullname: true, email: true } },
       },
     });
 
@@ -102,19 +93,18 @@ export const getMyProfile = async (req, res) => {
       return res.status(404).json({ error: "Profile not found" });
     }
 
-    return res.json(profile);
+    res.json(profile); // Supabase URLs are stored directly
   } catch (err) {
-    console.error("Error fetching profile:", err); //  full error, not just message
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("Error fetching profile:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
-//  Get All Profiles 
-
+// Get All Profiles (with pagination + filtering)
 export const getAllProfiles = async (req, res) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10)); //  capped at 50
+    const page = Number.isInteger(Number(req.query.page)) ? parseInt(req.query.page, 10) : 1;
+    const limit = Number.isInteger(Number(req.query.limit)) ? parseInt(req.query.limit, 10) : 10;
     const skip = (page - 1) * limit;
 
     const { collegeName, graduationYear } = req.query;
@@ -143,12 +133,15 @@ export const getAllProfiles = async (req, res) => {
     return res.json({
       total,
       page,
-      limit,
       totalPages: Math.ceil(total / limit),
       profiles,
     });
-  } catch (err) {
-    console.error("Error in getAllProfiles:", err); // full error object
-    return res.status(500).json({ error: "Internal server error" });
+  } catch (error) {
+    console.error("Error in getAllProfiles:", error.message, error.meta || "");
+    return res.status(500).json({
+      error: "Internal Server Error",
+      details: error.message,
+    });
   }
 };
+
