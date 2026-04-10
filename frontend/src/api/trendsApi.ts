@@ -5,7 +5,7 @@ export const fetchTrends = async () => {
   return response.data;
 };
 
-export const createTrend = async (trendData) => {
+export const createTrend = async (trendData: { title: string; description: string; tag: string }) => {
   const response = await axiosInstance.post('/trends/create', trendData);
   return response.data;
 };

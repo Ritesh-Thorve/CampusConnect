@@ -11,16 +11,10 @@ const trendSchema = Joi.object({
 export const createTrend = async (req, res, next) => {
   try {
     validate(trendSchema, req.body);
-
-    const trend = await prisma.trend.create({
-      data: req.body
-    });
-
-    return res.status(201).json(trend);
-
+    const trend = await prisma.trend.create({ data: req.body });
+    res.json({ message: 'Trend created', trend });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: err.message });
+    next(err);
   }
 };
 
