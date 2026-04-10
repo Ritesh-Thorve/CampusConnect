@@ -43,7 +43,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route path="/oauth-callback" element={<OAuthCallback />} />
+            {/* <Route path="/oauth-callback" element={<OAuthCallback />} /> */}
             <Route path="/college" element={<College />} />
             <Route path="/updates" element={<Updates />} />
             <Route path="/trends" element={<Trends />} />
