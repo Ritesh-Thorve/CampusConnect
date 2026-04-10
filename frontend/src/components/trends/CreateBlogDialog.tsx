@@ -20,6 +20,7 @@ const CreateBlogDialog: React.FC = () => {
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const [newBlog, setNewBlog] = useState({
     title: "",
     content: "",
@@ -35,7 +36,8 @@ const CreateBlogDialog: React.FC = () => {
     try {
       setLoading(true);
 
-      await dispatch(
+      // ✅ CREATE TREND
+      const createdTrend = await dispatch(
         addTrend({
           title: newBlog.title,
           description: newBlog.content,
@@ -43,14 +45,22 @@ const CreateBlogDialog: React.FC = () => {
         })
       ).unwrap();
 
-      await dispatch(getTrends());
+      // ✅ REFRESH LIST (IMPORTANT)
+      await dispatch(getTrends()).unwrap();
 
+      // ✅ SUCCESS
       toast.success("Trend published successfully! 🎉");
 
+      // ✅ RESET FORM
       setNewBlog({ title: "", content: "", tags: "" });
       setOpen(false);
-    } catch (error) {
-      toast.error("Failed to publish trend. Try again later.");
+    } catch (error: any) {
+      console.error("Create Trend Error:", error);
+
+      // ✅ BETTER ERROR MESSAGE
+      toast.error(
+        error?.message || "Failed to publish trend. Try again later."
+      );
     } finally {
       setLoading(false);
     }
@@ -73,8 +83,11 @@ const CreateBlogDialog: React.FC = () => {
           <Input
             placeholder="Trend title..."
             value={newBlog.title}
-            onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })}
+            onChange={(e) =>
+              setNewBlog({ ...newBlog, title: e.target.value })
+            }
           />
+
           <Textarea
             placeholder="Trend description..."
             value={newBlog.content}
@@ -82,20 +95,26 @@ const CreateBlogDialog: React.FC = () => {
               setNewBlog({ ...newBlog, content: e.target.value })
             }
           />
+
           <Input
             placeholder="Tag"
             value={newBlog.tags}
-            onChange={(e) => setNewBlog({ ...newBlog, tags: e.target.value })}
+            onChange={(e) =>
+              setNewBlog({ ...newBlog, tags: e.target.value })
+            }
           />
 
           <div className="flex justify-end gap-2">
             <Button
               variant="outline"
-              onClick={() => setNewBlog({ title: "", content: "", tags: "" })}
+              onClick={() =>
+                setNewBlog({ title: "", content: "", tags: "" })
+              }
               disabled={loading}
             >
               Cancel
             </Button>
+
             <Button onClick={handleSubmitBlog} disabled={loading}>
               {loading ? (
                 <>
@@ -114,3 +133,4 @@ const CreateBlogDialog: React.FC = () => {
 };
 
 export default CreateBlogDialog;
+
