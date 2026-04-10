@@ -44,7 +44,7 @@ const CreateBlogDialog: React.FC = () => {
       ).unwrap();
 
 
-      toast.success("Trend published successfully! 🎉");
+      toast.success("Trend published successfully!");
 
       setNewBlog({ title: "", content: "", tags: "" });
       setOpen(false);
@@ -59,7 +59,7 @@ const CreateBlogDialog: React.FC = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 h-10 px-4 rounded-lg shadow">
-          Create Trend
+          Create Blog
         </Button>
       </DialogTrigger>
 
