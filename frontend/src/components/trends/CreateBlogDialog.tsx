@@ -43,7 +43,6 @@ const CreateBlogDialog: React.FC = () => {
         })
       ).unwrap();
 
-      await dispatch(getTrends());
 
       toast.success("Trend published successfully! 🎉");
 

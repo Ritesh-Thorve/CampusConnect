@@ -6,18 +6,25 @@ interface Trend {
   title: string;
   description: string;
   tag: string;
+  createdAt?: string;
 }
 
 interface TrendsState {
   trends: Trend[];
   loading: boolean;
   error: string | null;
+  total: number;
+  page: number;
+  totalPages: number;
 }
 
 const initialState: TrendsState = {
   trends: [],
   loading: false,
   error: null,
+  total: 0,
+  page: 1,
+  totalPages: 1,
 };
 
 // Fetch trends
@@ -60,12 +67,16 @@ const trendsSlice = createSlice({
       })
       .addCase(getTrends.fulfilled, (state, action) => {
         state.loading = false;
-        state.trends = action.payload;
+        state.trends = action.payload.trends;      
+        state.total = action.payload.total;         // store pagination info
+        state.page = action.payload.page;
+        state.totalPages = action.payload.totalPages;
       })
       .addCase(getTrends.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
+
       // Add trend
       .addCase(addTrend.pending, (state) => {
         state.loading = true;
@@ -73,7 +84,8 @@ const trendsSlice = createSlice({
       })
       .addCase(addTrend.fulfilled, (state, action) => {
         state.loading = false;
-        state.trends.push(action.payload);
+        state.trends.unshift(action.payload.trend);
+        state.total += 1;                           
       })
       .addCase(addTrend.rejected, (state, action) => {
         state.loading = false;

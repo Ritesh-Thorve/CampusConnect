@@ -15,11 +15,6 @@ const EmptyState = ({ searchTerm, clearSearch }: EmptyStateProps) => (
       <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto shadow-lg">
         <PlusCircle className="w-10 h-10 text-blue-600" />
       </div>
-
-      {/* Decorative sparkle badge positioned at top-right of the circle */}
-      <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-        <span className="text-lg">✨</span>
-      </div>
     </div>
 
     {/* Title that changes based on whether a search term is present */}
