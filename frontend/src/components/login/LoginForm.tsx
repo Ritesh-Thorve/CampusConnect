@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,6 @@ import toast from "react-hot-toast";
 import { loginUser } from "../../api/auth/authApi";
 import { useAppDispatch } from "@/redux/store/hooks";
 import { setCredentials } from "@/redux/features/auth/authSlice";
-import { supabaseClient } from "../../config/supabaseClient";
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,28 +16,6 @@ const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
-  // On mount, check if Supabase already has a session (after redirect from Google)
-  useEffect(() => {
-    const getSession = async () => {
-      const { data, error } = await supabaseClient.auth.getSession();
-      if (data?.session) {
-        dispatch(
-          setCredentials({
-            token: data.session.access_token,
-            user: {
-              id: data.session.user.id,
-              email: data.session.user.email!,
-              fullname: data.session.user.user_metadata.full_name || "",
-              provider: data.session.user.app_metadata?.provider || "google",
-            },
-          })
-        );
-        navigate("/profile");
-      }
-    };
-    getSession();
-  }, [dispatch, navigate]);
 
   // Email/password login
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,31 +26,16 @@ const LoginForm = () => {
       dispatch(setCredentials(res));
       toast.success("Logged in successfully!");
       navigate("/profile");
-    } catch (error) {
-      toast.error("Invalid Credentials");
+    } catch {
+      toast.error("Invalid credentials");
     } finally {
       setLoading(false);
     }
   };
 
-  // Form change
+  // Form field change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // Google login
-  const handleGoogleLogin = async () => {
-    try {
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/profile`,
-        },
-      });
-      if (error) throw error;
-    } catch (err: any) {
-      toast.error(err.message || "Google login failed");
-    }
   };
 
   return (
@@ -86,7 +48,6 @@ const LoginForm = () => {
             back
           </span>
         </h1>
-
         <p className="text-gray-600 text-lg mb-6">
           Sign in to continue your journey
         </p>
@@ -94,48 +55,10 @@ const LoginForm = () => {
 
       <Card className="backdrop-blur-sm bg-white/90 shadow-2xl border-0 rounded-3xl">
         <CardContent className="p-8">
-          {/* Google Sign-In button */}
-          <Button
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            variant="outline"
-            className="w-full h-14 text-gray-700 border-2 border-gray-200 hover:bg-gray-50 rounded-2xl mb-6 font-medium flex items-center justify-center"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              <div className="flex items-center justify-center space-x-3">
-                <svg className="w-6 h-6" viewBox="0 0 24 24">
-                  {/* Google SVG */}
-                </svg>
-                <span className="text-lg">Continue with Google</span>
-              </div>
-            )}
-          </Button>
-
-          {/* Divider */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">
-                or continue with email
-              </span>
-            </div>
-          </div>
-
-          {/* Email login form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email field */}
             <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-sm font-semibold text-gray-700"
-              >
+              <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
                 Email
               </Label>
               <Input
@@ -152,10 +75,7 @@ const LoginForm = () => {
 
             {/* Password field */}
             <div className="space-y-2">
-              <Label
-                htmlFor="password"
-                className="text-sm font-semibold text-gray-700"
-              >
+              <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
                 Password
               </Label>
               <div className="relative">
@@ -172,13 +92,9 @@ const LoginForm = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-6 h-6" />
-                  ) : (
-                    <Eye className="w-6 h-6" />
-                  )}
+                  {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
                 </button>
               </div>
             </div>
