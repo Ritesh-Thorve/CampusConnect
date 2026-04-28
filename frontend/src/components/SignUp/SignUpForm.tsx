@@ -8,13 +8,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "../../redux/store/hooks";
 import { registerUser } from "../../redux/features/auth/authSlice";
 import toast from "react-hot-toast";
-import { supabaseClient } from "../../config/supabaseClient";
 import { RootState } from "@/redux/store/store";
 
 const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
   const dispatch = useAppDispatch();
@@ -71,23 +69,6 @@ const SignUpForm = () => {
       .catch((err) => toast.error("Failed to create account"));
   };
 
-  const handleGoogleSignUp = async () => {
-  setGoogleLoading(true);
-  try {
-    const { data, error } = await supabaseClient.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/profile`,
-      },
-    });
-    if (error) throw error;
-  } catch (err: any) {
-    toast.error(err.message || "Google sign-in failed");
-  } finally {
-    setGoogleLoading(false);
-  }
-};
-
   return (
     <div className="w-full max-w-lg">
       <div className="text-center mb-10">
@@ -102,38 +83,6 @@ const SignUpForm = () => {
 
       <Card className="backdrop-blur-sm bg-white/90 shadow-2xl border-0 rounded-3xl">
         <CardContent className="p-8">
-          {/* Google Button */}
-          <Button
-            onClick={handleGoogleSignUp}
-            disabled={googleLoading}
-            variant="outline"
-            className="w-full h-14 text-gray-700 border-2 border-gray-200 hover:bg-gray-50 rounded-2xl mb-6 font-medium flex items-center justify-center text-lg"
-          >
-            {googleLoading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              <div className="flex items-center justify-center space-x-3">
-                <svg className="w-6 h-6" viewBox="0 0 24 24">{/* Google SVG */}</svg>
-                <span className="text-lg">Continue with Google</span>
-              </div>
-            )}
-          </Button>
-
-          {/* Divider */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">
-                or continue with email
-              </span>
-            </div>
-          </div>
-
           {/* Email Signup Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Full Name */}
