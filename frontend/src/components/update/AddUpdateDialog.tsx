@@ -120,7 +120,7 @@ export const AddUpdateDialog = ({ open, onOpenChange }: AddUpdateDialogProps) =>
           </div>
 
           <div>
-            <Label>Full detailss</Label>
+            <Label>Full details</Label>
             <Textarea
               name="details"
               value={formData.details}
